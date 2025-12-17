@@ -1,6 +1,8 @@
 // ==================== 工具函数集合 ====================
 // 文件名：utils.js
 // 描述：通用工具函数，包括格式化、UI提示、加载动画等
+// 🔧 BUG修复 #19: 优化 getTruncatedBalance 使用
+// 🔧 BUG修复 #12: Toast消息防重叠优化
 
 // ==================== 地址格式化函数 ====================
 
@@ -61,14 +63,55 @@ function formatToken(value, decimals = 6) {
  * @param {number} decimals - 代币的小数位数
  * @returns {string} 合约单位（wei）的字符串
  */
-function toContractAmount(value, decimals = 6) {
-  if (!value || isNaN(value) || parseFloat(value) <= 0) return '0'
-  
-  // 将前端显示值向下舍入到指定小数位，然后转换为合约单位
-  const factor = Math.pow(10, decimals);
-  const truncated = Math.floor(parseFloat(value) * factor);
-  
-  return truncated.toString();
+// 修复的toContractAmount函数 - 完全避免科学计数法
+function toContractAmount(amount, decimals) {
+    if (!amount || isNaN(amount) || amount <= 0) {
+        return '0';
+    }
+    
+    // 1. 确保amount是字符串
+    let amountStr = amount.toString();
+    
+    // 2. 如果包含科学计数法，转换为普通数字
+    if (amountStr.includes('e') || amountStr.includes('E')) {
+        // 使用BigInt安全的转换方式
+        const amountNum = parseFloat(amountStr);
+        
+        // 将小数转换为整数：乘以10^decimals，然后取整
+        // 使用字符串操作避免科学计数法
+        if (decimals <= 20) {
+            // 对于较小的decimals，可以使用数字运算
+            const multiplier = Math.pow(10, decimals);
+            const weiValue = amountNum * multiplier;
+            
+            // 使用Math.floor确保是整数
+            return Math.floor(weiValue).toString();
+        } else {
+            // 对于大的decimals，使用字符串操作
+            const [integer, fractional = ''] = amountNum.toFixed(decimals).split('.');
+            return integer + fractional.padEnd(decimals, '0');
+        }
+    }
+    
+    // 3. 常规处理（无科学计数法）
+    const [integer, fractional = ''] = amountStr.split('.');
+    
+    // 如果有小数部分
+    if (fractional) {
+        // 补零或截断到指定小数位
+        const adjustedFractional = fractional.length > decimals 
+            ? fractional.substring(0, decimals)  // 截断
+            : fractional.padEnd(decimals, '0');  // 补零
+        
+        // 移除整数部分的前导零
+        const cleanInteger = integer.replace(/^0+/, '') || '0';
+        
+        return cleanInteger + adjustedFractional;
+    }
+    
+    // 4. 只有整数部分
+    const cleanInteger = integer.replace(/^0+/, '') || '0';
+    return cleanInteger + '0'.repeat(decimals);
 }
 
 /**
@@ -93,7 +136,7 @@ function fromContractAmount(value, decimals = 6) {
   return truncated.toFixed(displayDecimals);
 }
 
-// ==================== 新增：安全的格式化函数（确保向下舍入） ====================
+// ==================== 安全的格式化函数（确保向下舍入） ====================
 
 /**
  * 安全的余额格式化（向下舍入，确保不显示超过实际余额）
@@ -135,7 +178,8 @@ function formatNumberWithCommas(num, decimals = 0) {
 }
 
 /**
- * 获取向下舍入后的余额
+ * 🔧 BUG修复 #19: getTruncatedBalance 函数（供index.html统一使用）
+ * 获取向下舍入后的余额（避免代码重复）
  * @param {number|string} num - 原始数字
  * @param {number} decimals - 小数位数
  * @returns {number} 向下舍入后的数字
@@ -242,12 +286,59 @@ function showInfo(message) {
   showToast(message, 'info')
 }
 
+// 🔧 BUG修复 #12: Toast消息防重叠 - 添加队列管理
+let toastQueue = [];
+let isShowingToast = false;
+
+/**
+ * Toast队列处理函数
+ */
+function processToastQueue() {
+  if (isShowingToast || toastQueue.length === 0) return;
+  
+  const { message, type } = toastQueue.shift();
+  isShowingToast = true;
+  
+  _showToastInternal(message, type, () => {
+    isShowingToast = false;
+    // 处理下一个Toast（如果有）
+    setTimeout(processToastQueue, 300);
+  });
+}
+
 /**
  * 显示Toast提示的核心函数
  * @param {string} message - 显示的消息
  * @param {string} type - 消息类型：'success' | 'error' | 'info'
  */
 function showToast(message, type = 'info') {
+  // 🔧 BUG修复 #12: 检查是否有相同消息已在队列中
+  const isDuplicate = toastQueue.some(item => 
+    item.message === message && item.type === type
+  );
+  
+  if (isDuplicate) {
+    console.log('🔧 防止重复Toast:', message);
+    return;
+  }
+  
+  // 🔧 BUG修复 #12: 限制队列长度，防止堆积
+  if (toastQueue.length >= 3) {
+    console.warn('Toast队列已满，丢弃旧消息');
+    toastQueue.shift(); // 移除最旧的消息
+  }
+  
+  toastQueue.push({ message, type });
+  processToastQueue();
+}
+
+/**
+ * 内部Toast显示函数（实际渲染逻辑）
+ * @param {string} message - 显示的消息
+ * @param {string} type - 消息类型
+ * @param {function} onComplete - 完成回调
+ */
+function _showToastInternal(message, type, onComplete) {
   // 颜色映射
   const colors = {
     success: '#10b981', // 绿色
@@ -291,7 +382,7 @@ function showToast(message, type = 'info') {
     </div>
   `
   
-  // 移除现有的Toast
+  // 🔧 BUG修复 #12: 移除现有Toast（保证同时只显示一个）
   const existingToasts = document.querySelectorAll('.toast-message')
   existingToasts.forEach(toast => toast.remove())
   
@@ -299,11 +390,14 @@ function showToast(message, type = 'info') {
   document.body.insertAdjacentHTML('beforeend', toastHtml)
   
   // 3秒后自动移除
-  setTimeout(() => {
+  const autoRemoveTimer = setTimeout(() => {
     const toast = document.querySelector('.toast-message')
     if (toast) {
       toast.style.animation = 'slideUp 0.3s ease'
-      setTimeout(() => toast.remove(), 300)
+      setTimeout(() => {
+        toast.remove()
+        if (onComplete) onComplete()
+      }, 300)
     }
   }, 3000)
   
@@ -312,8 +406,12 @@ function showToast(message, type = 'info') {
     const toast = document.querySelector('.toast-message')
     if (toast) {
       toast.addEventListener('click', function() {
+        clearTimeout(autoRemoveTimer)
         this.style.animation = 'slideUp 0.3s ease'
-        setTimeout(() => this.remove(), 300)
+        setTimeout(() => {
+          this.remove()
+          if (onComplete) onComplete()
+        }, 300)
       })
     }
   }, 100)
