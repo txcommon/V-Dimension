@@ -1,4 +1,6 @@
-// 合约配置
+// ==================== 合约配置文件 ====================
+// 🔧 BUG修复 #21: 添加错误码常量，便于维护和国际化
+
 const CONFIG = {
   // BSC主网RPC
   RPC_URL: 'https://bsc-dataseed.binance.org/',
@@ -24,6 +26,111 @@ const CONFIG = {
     VDS: 8,
     BNB: 18
   }
+}
+
+// 🔧 BUG修复 #21: 合约错误码映射（便于国际化和维护）
+const CONTRACT_ERRORS = {
+  // 通用错误
+  'InsufficientBalance': 'Vollar余额不足',
+  'InsufficientAllowance': '授权额度不足',
+  'InsufficientContract': '合约余额不足',
+  'ZeroAddress': '零地址错误',
+  'ZeroAmount': '金额不能为零',
+  'ValueTooLow': '金额过小',
+  'ValueTooHigh': '金额过大',
+  'InvalidTimestamp': '时间戳无效',
+  'Expired': '已过期',
+  
+  // 共振相关错误
+  'ExceedsTotalResonance': '超过共振总量限制（1000亿封顶）',
+  'NoReferralProvided': '请先绑定推荐人',
+  'NotStarted': '功能尚未启动',
+  'CommunityExchangeNotStarted': '社区兑换尚未开放（2026-01-01开启）',
+  'CommunityAmountInsu': '铸造金额不足以创建社区',
+  
+  // 生息相关错误
+  'InterestEarningActivated': '持币生息已激活，无需重复开启',
+  'NoActiveInterest': '尚未激活持币生息',
+  'NoBNB': 'BNB余额不足支付手续费',
+  
+  // 推荐关系错误
+  'AlreadyHasReferrer': '已有推荐人，无法更改',
+  'InvalidReferrer': '推荐人无效',
+  'SelfReferral': '不能推荐自己',
+  'ContractAsReferrer': '不能使用合约地址作为推荐人',
+  
+  // 社区相关错误
+  'CommunityOnly': '仅限社区成员',
+  'NotEnoughMembers': '社区人数不足',
+  'OnlyTop1000': '仅限前1000名社区',
+  'QuotaExhausted': '配额已用尽',
+  'InsufficientCirculatingSupply': '流通总量不足',
+  
+  // 授权相关错误
+  'ApprovalAmountTooHigh': '授权金额超过当前限额',
+  'ERC20InsufficientAllowance': '授权额度不足',
+  'ERC20InsufficientBalance': '代币余额不足',
+  'ERC20InvalidApprover': '授权者地址无效',
+  'ERC20InvalidSpender': '授权对象地址无效',
+  
+  // 安全相关错误
+  'NotEOA': '仅限外部账户（EOA）',
+  'IsContract': '不能使用合约地址',
+  'Reentrancy': '重入攻击检测',
+  'Unauthorized': '未授权操作'
+}
+
+// 🔧 BUG修复 #21: 用户友好的错误消息映射（通用错误）
+const USER_FRIENDLY_ERRORS = {
+  // MetaMask 错误
+  'User denied transaction signature': '用户取消了交易',
+  'user rejected transaction': '用户取消了交易',
+  'insufficient funds': '余额不足（包括Gas费）',
+  'gas required exceeds allowance': 'Gas不足，请稍后重试',
+  'nonce too low': '交易序号错误，请刷新页面',
+  'replacement transaction underpriced': '交易费用过低，请提高Gas价格',
+  'already known': '交易已提交，请勿重复操作',
+  
+  // 网络错误
+  'Failed to fetch': '网络连接失败，请检查网络',
+  'Network Error': '网络错误，请重试',
+  'timeout': '请求超时，请重试',
+  
+  // RPC 错误
+  'Internal JSON-RPC error': '节点错误，请稍后重试',
+  'execution reverted': '合约执行失败'
+}
+
+// 🔧 BUG修复 #21: 错误解析函数（统一处理）
+function parseContractError(error) {
+  if (!error) return '未知错误';
+  
+  const errorMessage = error.message || error.toString();
+  
+  // 1. 检查用户友好错误
+  for (const [key, message] of Object.entries(USER_FRIENDLY_ERRORS)) {
+    if (errorMessage.includes(key)) {
+      return message;
+    }
+  }
+  
+  // 2. 检查合约自定义错误
+  for (const [key, message] of Object.entries(CONTRACT_ERRORS)) {
+    if (errorMessage.includes(key)) {
+      return message;
+    }
+  }
+  
+  // 3. 提取 revert 信息
+  const revertMatch = errorMessage.match(/revert (.+?)["']?\s*$/);
+  if (revertMatch) {
+    const revertReason = revertMatch[1];
+    return CONTRACT_ERRORS[revertReason] || `合约错误: ${revertReason}`;
+  }
+  
+  // 4. 返回原始错误（开发环境有用）
+  console.error('未处理的错误:', errorMessage);
+  return '交易失败，请重试';
 }
 
 // ERC20 基础ABI
@@ -57,7 +164,7 @@ const ERC20_ABI = [
   }
 ]
 
-// TokenBank ABI（从合约JSON文件中提取，这里只列出常用的）
+// TokenBank ABI（完整版）
 const TOKENBANK_ABI = [
 	{
 		"inputs": [
@@ -1666,7 +1773,7 @@ const TOKENBANK_ABI = [
 	}
 ]
 
-// Temple ABI（从合约JSON文件中提取）
+// Temple ABI（完整版）
 const TEMPLE_ABI = [
 	{
 		"inputs": [
@@ -2162,4 +2269,5 @@ const TEMPLE_ABI = [
 		"stateMutability": "nonpayable",
 		"type": "function"
 	}
+
 ]
