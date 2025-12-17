@@ -3,56 +3,1263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>圣殿 - 乐花联盟</title>
+    <title>信仰圣殿 - Temple of Fortuna</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            overflow-x: hidden;
+        }
+
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+            position: relative;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #0a0520 0%, #1a0b3d 50%, #2d1055 100%);
+            background: linear-gradient(135deg, #0d0118 0%, #1a0a2e 50%, #0d0118 100%);
             color: #fff;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        }
+
+        /* ==================== 粒子背景动画（密度30个）==================== */
+        .particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.9) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) scale(1);
+                opacity: 0;
+            }
+        }
+
+        .flame {
+            position: absolute;
+            background: radial-gradient(circle, rgba(251, 146, 60, 0.9) 0%, rgba(251, 191, 36, 0.4) 50%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: flicker 2s ease-in-out infinite;
+        }
+
+        @keyframes flicker {
+            0%, 100% { 
+                transform: scale(1) translateY(0);
+                opacity: 0.7;
+            }
+            50% { 
+                transform: scale(1.3) translateY(-8px);
+                opacity: 1;
+            }
+        }
+
+        /* 圣殿柱子装饰 */
+        .temple-pillar {
+            position: fixed;
+            width: 80px;
+            height: 100vh;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(168, 85, 247, 0.05) 20%,
+                rgba(168, 85, 247, 0.1) 50%,
+                rgba(168, 85, 247, 0.05) 80%,
+                transparent 100%
+            );
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .temple-pillar.left {
+            left: 5%;
+            box-shadow: inset 2px 0 20px rgba(168, 85, 247, 0.3);
+        }
+
+        .temple-pillar.right {
+            right: 5%;
+            box-shadow: inset -2px 0 20px rgba(168, 85, 247, 0.3);
+        }
+
+        /* 光柱效果 */
+        .light-beam {
+            position: fixed;
+            width: 2px;
+            height: 100vh;
+            background: linear-gradient(180deg, 
+                transparent 0%,
+                rgba(251, 191, 36, 0.3) 50%,
+                transparent 100%
+            );
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.5;
+        }
+
+        /* ==================== 主容器 ==================== */
+        .main-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* ==================== 页面标题 ==================== */
+        .page-header {
             text-align: center;
-            padding: 20px;
+            margin-bottom: 40px;
+            position: relative;
         }
-        .container {
-            max-width: 500px;
-        }
-        h1 {
+
+        .temple-title {
             font-size: 48px;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #a855f7, #d946ef);
+            font-weight: 700;
+            letter-spacing: 6px;
+            margin-bottom: 10px;
+        }
+
+        .temple-icon {
+            font-weight: 400;
+            font-style: normal;
+            filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.6));
+            margin-right: 10px;
+        }
+
+        .temple-text {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #fbbf24 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(251, 191, 36, 0.8);
+            filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.6));
+            font-weight: 700;
         }
-        p {
+
+        .temple-subtitle {
+            font-size: 14px;
+            color: rgba(251, 191, 36, 0.7);
+            font-weight: 300;
+            letter-spacing: 4px;
+        }
+
+        .divider {
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #fbbf24, transparent);
+            margin: 20px auto;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+        }
+
+        /* ==================== 卡片通用样式 ==================== */
+        .stat-card, .action-card {
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.6) 0%, rgba(49, 46, 129, 0.6) 100%);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(168, 85, 247, 0.3);
+            position: relative;
+            overflow: visible;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+
+        .stat-card:hover, .action-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(251, 191, 36, 0.6);
+            box-shadow: 0 10px 40px rgba(168, 85, 247, 0.4);
+        }
+
+        .card-header {
+            font-size: 20px;
+            color: #fbbf24;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+            font-weight: 600;
+            flex-wrap: nowrap;
+        }
+
+        .card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 1;
+        }
+
+        .card-header-right {
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        /* ==================== 帮助图标 ==================== */
+        .help-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(251, 191, 36, 0.2);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            color: #fbbf24;
+            font-size: 12px;
+            cursor: help;
+            margin-left: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .help-icon:hover {
+            background: rgba(251, 191, 36, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-flex;
+            z-index: 100;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            background-color: rgba(15, 13, 40, 0.98);
+            color: #fef3c7;
+            text-align: left;
+            border-radius: 8px;
+            padding: 12px;
+            position: absolute;
+            z-index: 99999;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 13px;
+            line-height: 1.6;
+            width: 280px;
+            border: 1px solid rgba(251, 191, 36, 0.5);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.95);
+            pointer-events: none;
+        }
+
+        /* 特殊处理：我的信仰的Tooltip向下显示 */
+        .tooltip.tooltip-down .tooltiptext {
+            bottom: auto;
+            top: 125%;
+        }
+
+        .tooltip.tooltip-down .tooltiptext::after {
+            top: auto;
+            bottom: 100%;
+            border-color: transparent transparent rgba(15, 13, 40, 0.98) transparent;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(15, 13, 40, 0.98) transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ==================== 统计项 ==================== */
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .stat-value {
             font-size: 18px;
-            color: rgba(255,255,255,0.7);
-            margin-bottom: 30px;
-        }
-        .btn {
-            display: inline-block;
-            padding: 15px 40px;
-            background: linear-gradient(135deg, #a855f7, #d946ef);
+            font-weight: 700;
             color: #fff;
-            text-decoration: none;
+        }
+
+        .stat-value.highlight {
+            color: #fbbf24;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+
+        /* ==================== 开启金库卡片（紧凑版）==================== */
+        .distribute-card {
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.7) 0%, rgba(49, 46, 129, 0.7) 100%);
+            border: 2px solid rgba(251, 191, 36, 0.4);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(10px);
+        }
+
+        .distribute-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+
+        .distribute-title {
+            font-size: 20px;
+            color: #fbbf24;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 1;
+        }
+
+        .countdown {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fbbf24;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .purse-balance {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px rgba(251, 191, 36, 0.6);
+        }
+
+        /* 进度条样式 */
+        .progress-container {
+            margin-bottom: 15px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+
+        .progress-fill.completed {
+            background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+
+        /* ==================== 我的信仰+领取福报合并 ==================== */
+        .faith-claim-container {
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.6) 0%, rgba(49, 46, 129, 0.6) 100%);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(168, 85, 247, 0.3);
+            position: relative;
+            overflow: visible;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+
+        .faith-claim-container:hover {
+            transform: translateY(-5px);
+            border-color: rgba(251, 191, 36, 0.6);
+            box-shadow: 0 10px 40px rgba(168, 85, 247, 0.4);
+        }
+
+        /* ==================== 输入框 ==================== */
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-field {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(168, 85, 247, 0.3);
             border-radius: 12px;
+            padding: 11px 20px;
+            color: #fff;
+            font-size: 22px;
+            font-weight: 700;
+            outline: none;
+            transition: all 0.3s ease;
+            height: 50px;
+        }
+
+        /* 移除输入框的上下箭头 */
+        .input-field::-webkit-inner-spin-button,
+        .input-field::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .input-field[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .input-field:focus {
+            border-color: #fbbf24;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .max-btn {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(139, 92, 246, 0.4) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: #fbbf24;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .max-btn:hover {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.6) 0%, rgba(139, 92, 246, 0.6) 100%);
+            transform: scale(1.05);
+        }
+
+        .balance-display {
+            font-size: 15px;
+            color: rgba(251, 191, 36, 0.9);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* ==================== 按钮 ==================== */
+        .temple-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .temple-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+            z-index: -1;
+        }
+
+        .temple-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #1e1b4b;
+            box-shadow: 0 5px 20px rgba(251, 191, 36, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(251, 191, 36, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(139, 92, 246, 0.4) 100%);
+            color: #fbbf24;
+            border: 1px solid rgba(168, 85, 247, 0.5);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.6) 0%, rgba(139, 92, 246, 0.6) 100%);
+            transform: translateY(-2px);
+        }
+
+        .btn-disabled {
+            background: rgba(100, 100, 100, 0.3);
+            color: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-disabled:hover {
+            transform: none;
+        }
+
+        .btn-disabled::before {
+            display: none;
+        }
+
+        /* ==================== 按钮组 ==================== */
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* ==================== 响应式 ==================== */
+        @media (max-width: 768px) {
+            .temple-title {
+                font-size: 32px;
+                letter-spacing: 4px;
+            }
+
+            .temple-icon {
+                font-size: 32px;
+            }
+
+            .temple-subtitle {
+                font-size: 12px;
+                letter-spacing: 3px;
+            }
+
+            .main-container {
+                padding: 20px 15px;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .stat-card, .action-card, .faith-claim-container {
+                padding: 20px 15px;
+                border-width: 1px;
+            }
+
+            .distribute-card {
+                padding: 15px;
+            }
+
+            .card-header {
+                font-size: 18px;
+            }
+
+            .card-header-left {
+                font-size: 16px;
+            }
+
+            .card-header-right {
+                font-size: 13px;
+            }
+
+            .distribute-header {
+                gap: 10px;
+            }
+
+            .distribute-title {
+                font-size: 16px;
+            }
+
+            .countdown {
+                font-size: 16px;
+                letter-spacing: 1px;
+            }
+
+            .purse-balance {
+                font-size: 20px;
+            }
+
+            .balance-display {
+                font-size: 13px;
+            }
+
+            .stat-item {
+                padding: 12px 0;
+            }
+
+            .stat-label, .stat-value {
+                font-size: 14px;
+            }
+
+            .input-field {
+                font-size: 14px;
+                padding: 12px 15px;
+            }
+
+            .temple-btn {
+                padding: 14px;
+                font-size: 15px;
+            }
+
+            /* 移动端隐藏装饰元素 */
+            .temple-pillar, .light-beam {
+                display: none;
+            }
+
+            /* 调整粒子密度 */
+            .particles-container {
+                opacity: 0.5;
+            }
+
+            /* Tooltip移动端优化 */
+            .tooltip .tooltiptext {
+                width: 250px;
+                font-size: 12px;
+                padding: 10px;
+            }
+        }
+
+        /* 小屏幕手机优化 */
+        @media (max-width: 480px) {
+            .temple-title {
+                font-size: 28px;
+                letter-spacing: 3px;
+            }
+
+            .temple-icon {
+                font-size: 28px;
+            }
+
+            .main-container {
+                padding: 15px 10px;
+            }
+
+            .stat-card, .action-card, .faith-claim-container {
+                padding: 15px 12px;
+            }
+
+            .card-header {
+                font-size: 16px;
+            }
+
+            .card-header-left {
+                font-size: 15px;
+            }
+
+            .card-header-right {
+                font-size: 12px;
+            }
+
+            .distribute-title {
+                font-size: 15px;
+            }
+
+            .countdown {
+                font-size: 15px;
+            }
+
+            .purse-balance {
+                font-size: 18px;
+            }
+
+            .stat-label, .stat-value {
+                font-size: 13px;
+            }
+
+            .button-group {
+                gap: 6px;
+            }
+        }
+
+        /* ==================== 底部导航 ==================== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0 20px;
+            background: rgba(26, 11, 61, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(168, 85, 247, 0.2);
+            box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 8px 16px;
+            border-radius: 12px;
+        }
+
+        .nav-item.active {
+            background: rgba(168, 85, 247, 0.15);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            transition: all 0.3s;
+        }
+
+        .nav-item.active .nav-icon {
+            color: #a855f7;
+            transform: scale(1.1);
+        }
+
+        .nav-item:not(.active) .nav-icon {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .nav-label {
+            font-size: 11px;
             font-weight: 600;
             transition: all 0.3s;
         }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(168, 85, 247, 0.4);
+
+        .nav-item.active .nav-label {
+            color: #a855f7;
+        }
+
+        .nav-item:not(.active) .nav-label {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* 页面底部留出导航栏空间 */
+        body {
+            padding-bottom: 80px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🏛️ 圣殿页</h1>
-        <p>开发中...</p>
-        <a href="index.html" class="btn">返回首页</a>
+    <!-- 圣殿柱子装饰 -->
+    <div class="temple-pillar left"></div>
+    <div class="temple-pillar right"></div>
+
+    <!-- 光柱效果 -->
+    <div class="light-beam" style="left: 15%;"></div>
+    <div class="light-beam" style="left: 85%;"></div>
+    <div class="light-beam" style="left: 30%;"></div>
+    <div class="light-beam" style="left: 70%;"></div>
+
+    <!-- 粒子背景容器 -->
+    <div class="particles-container" id="particlesContainer"></div>
+
+    <div class="main-container">
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <h1 class="temple-title">
+                <span class="temple-icon">🏛️</span>
+                <span class="temple-text">信仰圣殿</span>
+            </h1>
+            <div class="divider"></div>
+            <p class="temple-subtitle">TEMPLE OF FORTUNA</p>
+        </div>
+
+        <!-- 圣殿概况 -->
+        <div class="stat-card">
+            <div class="card-header">
+                📊 圣殿概况
+                <span class="tooltip">
+                    <span class="help-icon">?</span>
+                    <span class="tooltiptext">💡 显示全网质押和分红的统计数据。<br><br>• 每VDS累计分红 = 每质押1个VDS从开始到现在累计获得的VID奖励<br><br>• 预计本期每VDS = 如果现在开启金库，每1个VDS可以分到的VID奖励</span>
+                </span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">总质押量</span>
+                <span class="stat-value highlight" id="totalStaked">0 VDS</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">历史分红</span>
+                <span class="stat-value" id="totalDistributed">0 VID</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">金库余额</span>
+                <span class="stat-value highlight" id="purseBalance">0 VID</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">合约余额</span>
+                <span class="stat-value" id="contractBalance">0 VID</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">每VDS累计分红</span>
+                <span class="stat-value highlight" id="accRewardPerShare">0 VID</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">本期1VDS将分红</span>
+                <span class="stat-value highlight" id="estimatedNextDividend">0 VID</span>
+            </div>
+        </div>
+
+        <!-- 开启金库（紧凑版）-->
+        <div class="distribute-card">
+            <div class="distribute-header">
+                <span class="distribute-title">
+                    ⚡ 开启金库
+                    <span class="tooltip">
+                        <span class="help-icon">?</span>
+                        <span class="tooltiptext">💡 每24小时可触发一次分红，任何人都可以调用。金库中的VID将按质押比例分配给所有质押者。<br><br>⚠️ 需要全网总质押达到8888 VDS才能开启分红。</span>
+                    </span>
+                </span>
+                <span class="countdown" id="nextDistribution">23:59:59</span>
+            </div>
+            <div class="purse-balance">
+                金库: <span id="purseBalanceMain">0</span> VID
+            </div>
+
+            <!-- 进度条 -->
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>开启金库进度</span>
+                    <span><span id="progressAmount">0</span> / 8,888 VDS</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <button class="temple-btn btn-primary" onclick="handleDistribute()" id="distributeBtn">
+                <span>开启金库分红</span>
+            </button>
+        </div>
+
+        <!-- 我的信仰 + 领取福报（合并）-->
+        <div class="faith-claim-container">
+            <div class="card-header">
+                💎 我的信仰
+                <span class="tooltip tooltip-down">
+                    <span class="help-icon">?</span>
+                    <span class="tooltiptext">💡 显示您的质押和奖励情况。<br><br>• 待领福报会实时累积，随时可以领取<br><br>• 本期预计福报 = 如果现在开启金库，您预计可以获得的VID奖励</span>
+                </span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">当前质押</span>
+                <span class="stat-value highlight" id="myStaked">0 VDS</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">待领福报</span>
+                <span class="stat-value highlight" id="pendingReward">0 VID</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">累计获得福报</span>
+                <span class="stat-value" id="totalClaimed">0 VID</span>
+            </div>
+            <div class="stat-item" style="margin-bottom: 20px;">
+                <span class="stat-label">本期预计福报</span>
+                <span class="stat-value" id="estimatedReward">0 VID</span>
+            </div>
+
+            <!-- 领取福报按钮 -->
+            <button class="temple-btn btn-primary" onclick="handleClaimReward()" id="claimBtn">
+                <span>领取福报</span>
+            </button>
+        </div>
+
+        <!-- 质押信仰 -->
+        <div class="action-card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <span>🕯️ 质押信仰</span>
+                    <span class="tooltip">
+                        <span class="help-icon">?</span>
+                        <span class="tooltiptext">💡 质押VDS代币即可获得VID分红奖励。<br><br>• 需要先点击"授权VDS"按钮授权代币<br><br>• 授权成功后才能质押<br><br>• 最小质押数量为0.01 VDS<br><br>• 全网总质押达到8888 VDS即可开启分红</span>
+                    </span>
+                </div>
+                <div class="card-header-right">
+                    <span class="balance-display">余额: <span id="vdsBalance">0</span> VDS</span>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <input type="number" class="input-field" id="stakeAmount" placeholder="输入质押数量" min="0.01" step="0.01">
+                    <button class="max-btn" onclick="setMaxStake()">最大</button>
+                </div>
+            </div>
+
+            <button class="temple-btn btn-primary" onclick="handleApprove()" id="approveBtn">
+                <span>授权 VDS</span>
+            </button>
+
+            <button class="temple-btn btn-primary" onclick="handleStake()" id="stakeBtn" style="margin-top: 10px; display: none;">
+                <span>质押 VDS</span>
+            </button>
+        </div>
+
+        <!-- 解押管理 -->
+        <div class="action-card">
+            <div class="card-header">
+                ⏳ 解押管理
+                <span class="tooltip">
+                    <span class="help-icon">?</span>
+                    <span class="tooltiptext">⚠️ 解押规则说明：<br><br>• 发起解押后需等待3天才能提取<br><br>• 等待期间可以取消解押，代币将恢复到质押状态<br><br>• 解押等待显示您正在等待提取的VDS数量和剩余时间</span>
+                </span>
+            </div>
+            
+            <div class="stat-item" style="margin-bottom: 15px;">
+                <span class="stat-label">当前质押</span>
+                <span class="stat-value highlight" id="currentStaked">0 VDS</span>
+            </div>
+
+            <div class="stat-item" style="margin-bottom: 20px;">
+                <span class="stat-label">解押等待</span>
+                <span class="stat-value" id="waitingUnstake">
+                    <span id="pendingUnstakeAmount">0</span> VDS
+                    <span style="color: #fbbf24; font-size: 14px; margin-left: 10px;" id="unlockTime"></span>
+                </span>
+            </div>
+
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <input type="number" class="input-field" id="unstakeAmount" placeholder="输入解押数量" min="0.01" step="0.01">
+                    <button class="max-btn" onclick="setMaxUnstake()">最大</button>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="temple-btn btn-secondary" onclick="handleRequestUnstake()">解押信仰</button>
+                <button class="temple-btn btn-secondary" onclick="handleCancelUnstake()">取消解押</button>
+                <button class="temple-btn btn-primary" onclick="handleWithdraw()" id="withdrawBtn">提取信仰</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 粒子动画初始化（密度60个）====================
+        function initParticles() {
+            const container = document.getElementById('particlesContainer');
+            
+            // 减少到30个粒子（原来60个）
+            for (let i = 0; i < 30; i++) {
+                createParticle(container);
+            }
+
+            // 移除火焰效果（影响性能）
+            // for (let i = 0; i < 10; i++) {
+            //     createFlame(container);
+            // }
+        }
+
+        function createParticle(container) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            const size = Math.random() * 3 + 1;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            particle.style.animationDelay = Math.random() * 5 + 's';
+            
+            container.appendChild(particle);
+
+            setTimeout(() => {
+                particle.remove();
+                createParticle(container);
+            }, (Math.random() * 10 + 10) * 1000);
+        }
+
+        function createFlame(container) {
+            const flame = document.createElement('div');
+            flame.className = 'flame';
+            
+            const size = Math.random() * 50 + 30;
+            flame.style.width = size + 'px';
+            flame.style.height = size + 'px';
+            flame.style.left = Math.random() * 100 + '%';
+            flame.style.top = Math.random() * 100 + '%';
+            flame.style.animationDuration = (Math.random() * 2 + 1) + 's';
+            flame.style.animationDelay = Math.random() * 2 + 's';
+            
+            container.appendChild(flame);
+        }
+
+        // ==================== 数据格式化 ====================
+        function formatNumber(value, decimals, precision = 8) {
+            if (!value || value === 0) return '0.' + '0'.repeat(decimals);
+            
+            const num = Number(value) / Math.pow(10, precision);
+            
+            return num.toLocaleString('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+        }
+
+        // ==================== 倒计时更新 ====================
+        function updateCountdown() {
+            const mockNextTime = new Date().getTime() + 23 * 60 * 60 * 1000 + 59 * 60 * 1000 + 59 * 1000;
+            
+            setInterval(() => {
+                const now = new Date().getTime();
+                const distance = mockNextTime - now;
+
+                if (distance > 0) {
+                    const hours = Math.floor(distance / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    document.getElementById('nextDistribution').textContent = 
+                        `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                    
+                    const btn = document.getElementById('distributeBtn');
+                    btn.classList.add('btn-disabled');
+                    btn.disabled = true;
+                } else {
+                    document.getElementById('nextDistribution').textContent = '00:00:00';
+                    
+                    const btn = document.getElementById('distributeBtn');
+                    btn.classList.remove('btn-disabled');
+                    btn.disabled = false;
+                }
+            }, 1000);
+        }
+
+        // ==================== 加载模拟数据 ====================
+        function loadMockData() {
+            const mockTempleInfo = {
+                totalStaked: 12345678000000,
+                totalDistributed: 567890120000,
+                purseBal: 1234567000000,
+                contractBal: 9876543000000,
+                accRewardPerShare: 12345600,
+                estimatedNextDividend: 50000
+            };
+            
+            document.getElementById('totalStaked').textContent = formatNumber(mockTempleInfo.totalStaked, 2, 8) + ' VDS';
+            document.getElementById('totalDistributed').textContent = formatNumber(mockTempleInfo.totalDistributed, 2, 6) + ' VID';
+            document.getElementById('purseBalance').textContent = formatNumber(mockTempleInfo.purseBal, 2, 6) + ' VID';
+            document.getElementById('contractBalance').textContent = formatNumber(mockTempleInfo.contractBal, 2, 6) + ' VID';
+            document.getElementById('accRewardPerShare').textContent = formatNumber(mockTempleInfo.accRewardPerShare, 8, 8) + ' VID';
+            document.getElementById('estimatedNextDividend').textContent = formatNumber(mockTempleInfo.estimatedNextDividend, 8, 8) + ' VID';
+            document.getElementById('purseBalanceMain').textContent = formatNumber(mockTempleInfo.purseBal, 2, 6);
+
+            // 更新进度条
+            const totalStakedNum = mockTempleInfo.totalStaked / 1e8;  // 转换为VDS
+            const progressPercent = Math.min((totalStakedNum / 8888) * 100, 100);
+            document.getElementById('progressAmount').textContent = formatNumber(mockTempleInfo.totalStaked, 2, 8);
+            document.getElementById('progressFill').style.width = progressPercent + '%';
+            if (progressPercent >= 100) {
+                document.getElementById('progressFill').classList.add('completed');
+            }
+
+            const mockUserInfo = {
+                stakedAmount: 100000000000,
+                totalRewardDistributed: 123456000000,
+                estimateVIDReward: 1234000000,
+                pendingRewardAmount: 5025000000
+            };
+            
+            document.getElementById('myStaked').textContent = formatNumber(mockUserInfo.stakedAmount, 2, 8) + ' VDS';
+            document.getElementById('pendingReward').textContent = formatNumber(mockUserInfo.pendingRewardAmount, 2, 6) + ' VID';
+            document.getElementById('totalClaimed').textContent = formatNumber(mockUserInfo.totalRewardDistributed, 2, 6) + ' VID';
+            document.getElementById('estimatedReward').textContent = formatNumber(mockUserInfo.estimateVIDReward, 2, 6) + ' VID';
+
+            document.getElementById('vdsBalance').textContent = formatNumber(500000000000, 2, 8);
+            document.getElementById('currentStaked').textContent = formatNumber(mockUserInfo.stakedAmount, 2, 8) + ' VDS';
+            
+            const mockPendingUnstake = 10000000000;
+            document.getElementById('pendingUnstakeAmount').textContent = formatNumber(mockPendingUnstake, 2, 8);
+            document.getElementById('unlockTime').textContent = '(剩余2天12小时)';
+
+            checkButtons();
+        }
+
+        function checkButtons() {
+            // 检查领取按钮
+            const pendingReward = 5025000000;
+            const claimBtn = document.getElementById('claimBtn');
+            if (pendingReward === 0) {
+                claimBtn.classList.add('btn-disabled');
+                claimBtn.disabled = true;
+            } else {
+                claimBtn.classList.remove('btn-disabled');
+                claimBtn.disabled = false;
+            }
+
+            // 检查提取按钮
+            const hasWaitTime = true;
+            const withdrawBtn = document.getElementById('withdrawBtn');
+            if (hasWaitTime) {
+                withdrawBtn.classList.add('btn-disabled');
+                withdrawBtn.disabled = true;
+            } else {
+                withdrawBtn.classList.remove('btn-disabled');
+                withdrawBtn.disabled = false;
+            }
+
+            // 检查开启金库按钮 - 需要总质押达到8888 VDS
+            const totalStaked = 12345678000000 / 1e8;  // 模拟数据
+            const distributeBtn = document.getElementById('distributeBtn');
+            if (totalStaked < 8888) {
+                distributeBtn.classList.add('btn-disabled');
+                distributeBtn.disabled = true;
+            }
+        }
+
+        // ==================== 功能函数 ====================
+        function setMaxStake() {
+            const balance = document.getElementById('vdsBalance').textContent.replace(/,/g, '');
+            document.getElementById('stakeAmount').value = balance;
+        }
+
+        function setMaxUnstake() {
+            const available = document.getElementById('currentStaked').textContent.replace(/,/g, '').replace(' VDS', '');
+            document.getElementById('unstakeAmount').value = available;
+        }
+
+        async function handleApprove() {
+            console.log('授权 VDS');
+            alert('授权成功！现在可以质押了\n（这是模拟数据，实际需要连接钱包）');
+            
+            document.getElementById('approveBtn').style.display = 'none';
+            document.getElementById('stakeBtn').style.display = 'block';
+        }
+
+        async function handleStake() {
+            const amount = document.getElementById('stakeAmount').value;
+            if (!amount || amount <= 0) {
+                alert('请输入有效的质押数量');
+                return;
+            }
+            if (amount < 0.01) {
+                alert('最小质押数量为0.01 VDS');
+                return;
+            }
+            
+            console.log('质押数量:', amount);
+            alert(`质押 ${amount} VDS 成功！\n（这是模拟数据，实际需要连接钱包）`);
+        }
+
+        async function handleRequestUnstake() {
+            const amount = document.getElementById('unstakeAmount').value;
+            if (!amount || amount <= 0) {
+                alert('请输入有效的解押数量');
+                return;
+            }
+            
+            console.log('解押数量:', amount);
+            alert(`发起解押 ${amount} VDS，等待3天后可提取\n（这是模拟数据，实际需要连接钱包）`);
+        }
+
+        async function handleCancelUnstake() {
+            console.log('取消解押');
+            alert('取消解押成功！\n（这是模拟数据，实际需要连接钱包）');
+        }
+
+        async function handleWithdraw() {
+            console.log('提取代币');
+            alert('提取代币成功！\n（这是模拟数据，实际需要连接钱包）');
+        }
+
+        async function handleClaimReward() {
+            console.log('领取奖励');
+            alert('领取奖励成功！\n（这是模拟数据，实际需要连接钱包）');
+        }
+
+        async function handleDistribute() {
+            console.log('触发分红');
+            alert('开启金库分红成功！\n（这是模拟数据，实际需要连接钱包）');
+        }
+
+        window.addEventListener('load', () => {
+            initParticles();
+            loadMockData();
+            updateCountdown();
+        });
+    </script>
+
+    <!-- 底部导航 -->
+    <div class="bottom-nav">
+        <div class="nav-item">
+            <div class="nav-icon">🏠</div>
+            <div class="nav-label">首页</div>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">📊</div>
+            <div class="nav-label">数据</div>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">💰</div>
+            <div class="nav-label">兑换</div>
+        </div>
+        <div class="nav-item active">
+            <div class="nav-icon">🏛️</div>
+            <div class="nav-label">圣殿</div>
+        </div>
     </div>
 </body>
 </html>
