@@ -15,7 +15,8 @@ const CONFIG = {
     Temple: '0x8dbACDE486A129C2671AF4d37681372DeF06618D',
     VID: '0x65b8F22EF3F2fF7072744Fc4dC919E8e6dbE5E6A',
     USDT: '0x55d398326f99059fF775485246999027B3197955',
-    VDS: '0xA92BD5D04121a6D02CC687129963dB9C2665cd05'
+    VDS: '0xA92BD5D04121a6D02CC687129963dB9C2665cd05',
+	TRINITY: '0x79abc0A7463e586812ed2E3df343AB464513820d',
   },
   
   // 代币精度
@@ -162,6 +163,416 @@ const ERC20_ABI = [
     "outputs": [{"name": "", "type": "uint256"}],
     "type": "function"
   }
+]
+// VDSTRINITY ABI（完整版）
+const VDSTRINITY_ABI = [
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "vdsAmount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "claimTime",
+				"type": "uint256"
+			}
+		],
+		"name": "ClaimVDS",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "usdtAmount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "vidBought",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "treasuryVID",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "contractVID",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "lpBurned",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "vdsPending",
+				"type": "uint256"
+			}
+		],
+		"name": "Deposit",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "forfeitedAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "ForfeitVDS",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "usdtAmount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "vidAmount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "lpBurned",
+				"type": "uint256"
+			}
+		],
+		"name": "LiquidityAdded",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "previousOwner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "OwnershipTransferred",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "usdtDepositedTotal",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "contractVIDBalance",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "contractVDSBalance",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "lastRebalance",
+				"type": "uint256"
+			}
+		],
+		"name": "TrinityStatus",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "caller",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "vidUsed",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "vdsReceived",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "newVDSBalance",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "nextAvailableTime",
+				"type": "uint256"
+			}
+		],
+		"name": "VDSBalanceAdjusted",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "usdtAmount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "vidReceived",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "treasuryShare",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "contractShare",
+				"type": "uint256"
+			}
+		],
+		"name": "VIDPurchased",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "DEAD",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "claimVDS",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "usdtAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "deposit",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getTrinityStatus",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "totalDeposited",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "contractVIDBalance",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "contractVDSBalance",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "netVDSOutflowed",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getUserInfo",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "totalDeposited",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "totalClaimed",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "pendingVDS",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "depositTime",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getVDSVIDPoolStatus",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "currentRatio",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "nextRebalance",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "nextReTimer",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "maintainVDSBalance",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "vidUsed",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "vdsReceived",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "transferOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "token",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "withdrawToken",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
 ]
 
 // TokenBank ABI（完整版）
