@@ -11,11 +11,11 @@ const CONFIG = {
   
   // 合约地址
   CONTRACTS: {
-    TokenBank: '0x22f457Ed9c3Ed8BB84d4796d601C23E69F715970',
-    Temple: '0x8dbACDE486A129C2671AF4d37681372DeF06618D',
-    VID: '0x65b8F22EF3F2fF7072744Fc4dC919E8e6dbE5E6A',
+    TokenBank: '0x924B8bfEC7B02df5e5424A624b843F9f2169807d',
+    Temple: '0x79b289fC67EfF8484bFd34720dFa7825425F8a69',
+    VID: '0x3673FFa138427794CcB6Af82C6D4156bdc33e1b7',
     USDT: '0x55d398326f99059fF775485246999027B3197955',
-    VDS: '0xA92BD5D04121a6D02CC687129963dB9C2665cd05',
+    VDS: '0xAF6aD9615383132139b51561F444CF2A956b55d5',
 	TRINITY: '0x79abc0A7463e586812ed2E3df343AB464513820d',
   },
   
@@ -588,6 +588,11 @@ const TOKENBANK_ABI = [
 				"internalType": "address",
 				"name": "_token2",
 				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_InitialContract",
+				"type": "address"
 			}
 		],
 		"stateMutability": "nonpayable",
@@ -885,6 +890,11 @@ const TOKENBANK_ABI = [
 	{
 		"inputs": [],
 		"name": "SelfReferral",
+		"type": "error"
+	},
+	{
+		"inputs": [],
+		"name": "TransferToDangerousExchange",
 		"type": "error"
 	},
 	{
@@ -1532,19 +1542,6 @@ const TOKENBANK_ABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "getAllCommunityPerformance",
-		"outputs": [
-			{
-				"internalType": "uint256[]",
-				"name": "",
-				"type": "uint256[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [
 			{
 				"internalType": "uint8",
@@ -1745,19 +1742,6 @@ const TOKENBANK_ABI = [
 	},
 	{
 		"inputs": [],
-		"name": "getMyReferrer",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
 		"name": "getPayBNBFee",
 		"outputs": [
 			{
@@ -1804,6 +1788,25 @@ const TOKENBANK_ABI = [
 				"internalType": "struct UserDataManager.RateStats",
 				"name": "",
 				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "getReferrer",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
 			}
 		],
 		"stateMutability": "view",
@@ -2074,6 +2077,13 @@ const TOKENBANK_ABI = [
 		"type": "function"
 	},
 	{
+		"inputs": [],
+		"name": "renounceOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "uint256",
@@ -2110,6 +2120,19 @@ const TOKENBANK_ABI = [
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "toggleDangerousAddress",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -2308,6 +2331,43 @@ const TEMPLE_ABI = [
 			{
 				"indexed": false,
 				"internalType": "uint256",
+				"name": "taxAmount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "pendingReward",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "userBalanceBefore",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "userBalanceAfter",
+				"type": "uint256"
+			}
+		],
+		"name": "TaxDeducted",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
 				"name": "amount",
 				"type": "uint256"
 			}
@@ -2462,6 +2522,38 @@ const TEMPLE_ABI = [
 		"name": "distributeRewards",
 		"outputs": [],
 		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "userAddress",
+				"type": "address"
+			}
+		],
+		"name": "getCurrentTax",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "taxAmount",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getDividendTax",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -2680,5 +2772,4 @@ const TEMPLE_ABI = [
 		"stateMutability": "nonpayable",
 		"type": "function"
 	}
-
 ]
