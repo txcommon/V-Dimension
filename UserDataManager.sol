@@ -3,8 +3,6 @@ pragma solidity >=0.8.0;
 
 contract UserDataManager {
 
-    address public constant owner = address(0);           //无权限合约拥有者
-
     // ==================== 新人授权保护 ====================
 
     //新人授权保护结构体
@@ -28,6 +26,7 @@ contract UserDataManager {
     // ==================== 用户个人信息 ====================
 
     mapping(address => bool) internal holdingInterest;         //个人持币生息权限
+    mapping(address => bool) internal dangerousAddresses;      //限制转账PAIR地址
     mapping(address => uint256) internal interestTime;         //个人生息时间表
     mapping(address => uint256) internal bnbTime;              //Vollar兑换BNB时间表
     mapping(address => uint256) internal usdtTime;             //Vollar兑换USDT时间表
@@ -38,14 +37,17 @@ contract UserDataManager {
     struct GlobalStats {
         uint256 startTimer;                // 合约启动时间
         uint256 userCount;                 // 共振参与人数
+
         //全网Vollar铸造统计
         uint256 allTotalAmount;            // 全网铸造总量
         uint256 allVIDMintedVollar;        // VID铸造总量
         uint256 allUSDTMintedVollar;       // USDT铸造总量
-        uint256 allCompoundInterest;       // 全网生息总量
+        uint256 allCompoundInterest;       // 生息铸造总量
+
         //全网共振统计
         uint256 allTotalVIDResonance;      // VID共振总量
         uint256 allTotalUSDTResonance;     // USDT共振总量
+
         //全网推广奖励VID统计
         uint256 allVIDRewardAmount;        // 奖励VID总量
         
@@ -57,6 +59,7 @@ contract UserDataManager {
         uint256 allBNBWithdrawn;           // 兑换BNB总量
         uint256 allUSDTWithdrawn;          // 兑换USDT总量
         uint256 allVIDWithdrawn;           // 兑换VID总量
+
         //全网兑换资产销毁Vollar统计
         uint256 allTotalAmountS;           // 社区销毁总量
         
@@ -91,7 +94,7 @@ contract UserDataManager {
 
     }
 
-    // 存储用户信息userInfo[user].personalHoldingInterest
+    //存储用户信息列表
     mapping(address => UserInfo) internal userInfo;
 
     // ==================== 综合更新方法 ====================
@@ -116,7 +119,7 @@ contract UserDataManager {
         u.vidResonanceAmount += vidAmount;              //共振VID金额
         if (communitySubsidy > 0){
             u.communitySubsidyMint += communitySubsidy;//社区补贴
-            u.vollarFromVID += actualMintAmount - communitySubsidy; 
+            u.vollarFromVID += actualMintAmount - communitySubsidy; //基础铸造(扣除社区补贴)
         } else {u.vollarFromVID += actualMintAmount; }
 
         // 更新系统数据
@@ -171,6 +174,7 @@ contract UserDataManager {
         
         // 更新系统数据
         globalStats.allCompoundInterest += interestAmount;
+        globalStats.allTotalAmount += interestAmount;
         
         // 更新时间
         interestTime[user] = block.timestamp;
@@ -185,7 +189,7 @@ contract UserDataManager {
         } else {
             u.vidRewardsFromRef += amount;          //普通推荐VID奖励
         }
-        
+        // 更新系统数据
         globalStats.allVIDRewardAmount += amount;
     }
 
