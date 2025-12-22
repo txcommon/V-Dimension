@@ -1,4 +1,26 @@
 // SPDX-License-Identifier: MIT
+/*
+██████╗ ██╗██╗   ██╗    ██████╗ ██████╗ ███╗   ██╗███████╗ ██████╗ ███╗   ██╗ █████╗ 
+██╔══██╗██║██║   ██║    ██╔══██╗██╔══██╗████╗  ██║██╔════╝██╔═══██╗████╗  ██║██╔══██╗
+██║  ██║██║██║   ██║    ██║  ██║██████╔╝██╔██╗ ██║█████╗  ██║   ██║██╔██╗ ██║███████║
+██║  ██║██║╚██╗ ██╔╝    ██║  ██║██╔══██╗██║╚██╗██║██╔══╝  ██║   ██║██║╚██╗██║██╔══██║
+██████╔╝██║ ╚████╔╝     ██████╔╝██║  ██║██║ ╚████║██║     ╚██████╔╝██║ ╚████║██║  ██║
+╚═════╝ ╚═╝  ╚═══╝      ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝      ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝
+
+██╗   ██╗███████╗██████╗ ████████╗    ██████╗ ███████╗███████╗██╗███╗   ██╗ ██████╗ 
+██║   ██║██╔════╝██╔══██╗╚══██╔══╝    ██╔══██╗██╔════╝██╔════╝██║████╗  ██║██╔════╝ 
+██║   ██║███████╗██║  ██║   ██║       ██║  ██║█████╗  ███████╗██║██╔██╗ ██║██║  ███╗
+██║   ██║╚════██║██║  ██║   ██║       ██║  ██║██╔══╝  ╚════██║██║██║╚██╗██║██║   ██║
+╚██████╔╝███████║██████╔╝   ██║       ██████╔╝███████╗███████║██║██║ ╚████║╚██████╔╝
+ ╚═════╝ ╚══════╝╚═════╝    ╚═╝       ╚═════╝ ╚══════╝╚══════╝╚═╝╚═╝  ╚═══╝ ╚═════╝ 
+
+██╗  ██╗███████╗██████╗  █████╗ ██████╗  █████╗ ██████╗ ██╗   ██╗██╗ ██████╗ ███╗   ██╗
+██║  ██║██╔════╝██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║   ██║██║██╔═══██╗████╗  ██║
+███████║█████╗  ██████╔╝███████║██████╔╝███████║██║  ██║██║   ██║██║██║   ██║██╔██╗ ██║
+██╔══██║██╔══╝  ██╔══██╗██╔══██║██╔══██╗██╔══██║██║  ██║██║   ██║██║██║   ██║██║╚██╗██║
+██║  ██║███████╗██║  ██║██║  ██║██║  ██║██║  ██║██████╔╝╚██████╔╝██║╚██████╔╝██║ ╚████║
+╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝  ╚═════╝ ╚═╝ ╚═════╝ ╚═╝  ╚═══╝
+*/
 pragma solidity >=0.8.0;
 
 import "./ERC20.sol";
@@ -13,7 +35,6 @@ import "./CommunityManager.sol";
 import "./UserDataManager.sol";
 import "./ValidationUtils.sol";
 import "./ReferralManager.sol";
-import "./DepositsManager.sol";
 
 contract TokenBank is 
     ERC20, 
@@ -22,8 +43,7 @@ contract TokenBank is
     LayerRanking, 
     UserDataManager, 
     ValidationUtils,
-    ReferralManager,
-    DepositsManager
+    ReferralManager
 {
     using SafeERC20 for IERC20;
     using MathUtils for uint256;
@@ -31,25 +51,37 @@ contract TokenBank is
     using TokenExchange for uint256;
     using InterestRate for uint256;
 
-    constructor(address _token, address _token2) 
-        ERC20("V-Dimension", "Vollar")
+    constructor(address _token, address _token2, address _InitialContract) 
+        ERC20("Vollar", "Vollar")
         LayerRanking()
         CommunityManager()
         UserDataManager()
         ValidationUtils()
         ReferralManager()
-        DepositsManager()
     {
         Token = IERC20(_token);
         Token2 = IERC20(_token2);
         globalStats.startTimer = block.timestamp;
         globalStats.userCount = 1;
-        _mint(msg.sender, 1000000 * 10 ** decimals());  //初始铸币
+        _mint(_InitialContract, 1000000 * 10 ** decimals());  //初始铸币
+        owner = _msgSender();
     }
-
+    address public owner ;//合约管理者者
     IERC20 public immutable Token;
     IERC20 public immutable Token2;
-
+    //修饰符
+    modifier onlyOwner() {
+        if (msg.sender != owner) revert Unauthorized();
+        _;
+    }
+    //设置PAIR合约限制
+    function toggleDangerousAddress(address account) external onlyOwner {
+        dangerousAddresses[account] = !dangerousAddresses[account];
+    }
+    //永久放弃权限，合约无法再设置PAIR！请谨慎操作！
+    function renounceOwnership() external onlyOwner {
+        owner = address(0);
+    }
     // ==================== 事件定义 ====================
     event ResonateDeposit(address indexed user, uint256 resonateAmount, uint256 vollarAmount, uint256 timestamp, bool isVID);
     event InterestActivated(address indexed user, uint256 costAmount, uint256 timestamp);
@@ -78,11 +110,15 @@ contract TokenBank is
         address sender = _msgSender();
 
         //指定金额绑定关系条件检查
-        if (amount == MathUtils.min1Amount 
+        if (amount == MathUtils.min1Amount
         && refs[to] == address(0) 
         && refs[sender] != address(0)){
             //绑定关系
             _bindReferral(to, sender);
+            //收取绑定费（销毁代币作为费用）
+            _burn(sender, MathUtils.min1Amount);
+
+            return true;
         }
         //处理转账
         _processStandardTransfer(sender, to, amount);
@@ -104,6 +140,8 @@ contract TokenBank is
 
     //处理转账核心函数
     function _processStandardTransfer(address from, address to, uint256 value) private {
+        //禁止向PAIR合约转账
+        if(dangerousAddresses[to])revert TransferToDangerousExchange();
         //定位流通总量
         uint256 total = totalSupply();
         //获取当前转账税率
@@ -163,8 +201,8 @@ contract TokenBank is
     //======处理核心数据=====
     function _processCoreDeposit(address user1, uint256 amount, uint256 zAmount) private {
 
-         // 首次共振用户增加全网共振用户数量
-        bool isNewUser = (userDeposits[user1].count == 0);
+        // 首次共振用户增加全网共振用户数量
+        bool isNewUser = (userInfo[user1].vidResonanceAmount == 0 && userInfo[user1].usdtResonanceAmount == 0);
         if (isNewUser) {
             globalStats.userCount++;
         }
@@ -175,6 +213,7 @@ contract TokenBank is
         if (isCommunityMember(user1)) {
             // 🎯 社区创世兑换启动时间限制
             if(block.timestamp < MathUtils.genesisExchangeTime)revert CommunityExchangeNotStarted();
+            if(getMemberCount() < 10)revert NotEnoughMembers(10);
             //计算社区补贴(额外铸造奖励)
             communitySubsidy = zAmount * totalSupply().getSubsidyRate() / 100;
             //本次铸造Vollar总额
@@ -185,8 +224,7 @@ contract TokenBank is
         //处理共振数据
         completeVIDResonanceUpdate(user1, actualMintAmount, amount, communitySubsidy);
 
-        //处理共振记录
-        addDepositRecord(user1, amount, actualMintAmount, true);
+
 
         //铸造Vollar给用户
         _mint(user1, actualMintAmount);
@@ -197,8 +235,6 @@ contract TokenBank is
         if(!isCommunityMember(user1) && zAmount >= communityFee - 300e6) {
             //防止用户同时申请社区导致失败
             if(zAmount < communityFee)revert CommunityAmountInsu();
-            // 🎯 启动创建社区时间限制
-            if(block.timestamp < MathUtils.communityLaunchTime)revert NotStarted();
             
             _addToCommunity(user1);                      //增加新社区
             updateCommunityPerformance(user1, zAmount);  //更新社区业绩
@@ -311,7 +347,8 @@ contract TokenBank is
 
         //检查用户余额
         _validateSufficientBalance(Token2.balanceOf(user2), amount);
-
+        //未绑定推荐地址，禁止共振
+        if(refs[user2] == address(0))revert NoReferralProvided();
         //铸造范围检查
         _validateMinValue(amount, MathUtils.token2MinAmount);
         _validateMaxValue(amount, MathUtils.max2Amount);
@@ -323,7 +360,7 @@ contract TokenBank is
         Token2.safeTransferFrom(user2, address(this), amount);
 
         //更新共振人数统计
-        bool isNewUser = (userDeposits[user2].count == 0);
+        bool isNewUser = (userInfo[user2].vidResonanceAmount == 0 && userInfo[user2].usdtResonanceAmount == 0);
         if (isNewUser) {
             globalStats.userCount++;
         }
@@ -344,8 +381,7 @@ contract TokenBank is
         }
         //处理数据信息
         completeUSDTResonanceUpdate(user2, mintAmount, amount, communitySubsidy);
-        //处理共振记录
-        addDepositRecord(user2, amount, mintAmount, false);
+
         //发出事件
         emit ResonateDeposit(user2, amount, mintAmount, block.timestamp, false);
         //铸造Vollar给用户
@@ -470,19 +506,23 @@ contract TokenBank is
     function communityUSDTForVID() external nonReentrant{
 
         address user = _msgSender();
+        uint256 totalCommunities = getMemberCount();
         //非社区账户不能兑换
         if(!isCommunityMember(user))revert CommunityOnly();
         //全网社区不足30个不能兑换
-        if(getMemberCount() < 30)revert NotEnoughMembers(30);
-        //上榜社区达到1000个只限上傍社区兑换
-        if(_totalRankedCommunities >= 1000 && communityLayer[user] == 0)revert OnlyTop1000();
+        if(totalCommunities < 30)revert NotEnoughMembers(30);
+        //直推不足5人开启生息不能兑换
+        if(directReferralInterestCount[user] < 5)revert NotEnoughMembers(5);
 
-        //2100万之前固定兑换500U，之后固定兑换1000U
+        //社区达到300个只限上傍社区兑换
+        if(totalCommunities >= 300 && communityLayer[user] == 0)revert OnlyTop1000();
+
+        //2100万之前固定兑换1000U，之后固定兑换3000U
         uint256 usdtAmount;
         if (totalSupply() < 21000000e6) {
-            usdtAmount = 500e18;  // 2100万之前
+            usdtAmount = 1000e18;  // 2100万之前
         } else {
-            usdtAmount = 1000e18; // 2100万之后
+            usdtAmount = 3000e18; // 2100万之后
         }
         //定位个人持有的USDT余额
         uint256 selfAmount = Token2.balanceOf(user);
@@ -500,7 +540,7 @@ contract TokenBank is
         globalStats.totalRedeemedVID > total.getVIDQuota())revert QuotaExhausted();
         
         //将USDT转化为VID金额
-        uint256 sendAmount = usdtAmount / total.getMintRate() / MathUtils.baseMillion;
+        uint256 sendAmount = usdtAmount / (total.getMintRate() * MathUtils.baseMillion);
 
         //查检合约中VID余额
         _validateContractBalance(Token.balanceOf(address(this)), sendAmount);
@@ -523,16 +563,17 @@ contract TokenBank is
     function communityVollarForBNB() external nonReentrant{
         address user = _msgSender();
         uint256 total = totalSupply();
+        uint256 totalCommunities = getMemberCount();
         //限社区参与
         if(!isCommunityMember(user))revert CommunityOnly();
         //满足直推10人生息
         if(directReferralInterestCount[user] < 10)revert NotEnoughMembers(10);
         //满足全网300社区
-        if(getMemberCount() < 300)revert NotEnoughMembers(300);
+        if(totalCommunities < 300)revert NotEnoughMembers(300);
         //满足2100万的流通量
         if(total < MathUtils.BASE_SUPPLY)revert InsufficientCirculatingSupply();
-        //上榜社区达到1000名只限上傍社区兑换
-        if(_totalRankedCommunities >= 1000 && communityLayer[user] == 0)revert OnlyTop1000();
+        //社区达到500个只限上傍社区兑换
+        if(totalCommunities >= 500 && communityLayer[user] == 0)revert OnlyTop1000();
         //兑换时间间隔限制
         uint256 lastBnbTime = bnbTime[user] + MathUtils.RemaxTime;
         _validatePastTimestamp(lastBnbTime);
@@ -589,8 +630,8 @@ contract TokenBank is
         if(directReferralInterestCount[user] < 10)revert NotEnoughMembers(10);
         //满足1亿枚Vollar的流通量
         if(total < MathUtils.baseBillion)revert InsufficientCirculatingSupply();
-        //上榜社区达到1000个只限上傍社区兑换
-        if(_totalRankedCommunities >= 1000 && communityLayer[user] == 0)revert OnlyTop1000();
+        //社区达到1000个只限上傍社区兑换
+        if(getMemberCount() >= 1000 && communityLayer[user] == 0)revert OnlyTop1000();
         //达到333亿解除USDT兑换配额限制
         if (total < 333 * MathUtils.baseBillion 
         && globalStats.allUSDTWithdrawn >= total.getUSDTAllocation())revert QuotaExhausted();
@@ -747,67 +788,74 @@ contract TokenBank is
         return address(0);
     }
 
-    //自主分页综合查询：社区业绩|外奖励|动态奖励|
+    //自主分页综合查询：社区业绩|额外奖励|动态奖励|
     function getCommunityData(
         uint8 dataType,      //1、共振业绩。2、Vollar铸造奖励。3、社区VID奖励
         uint256 startIndex,  //起始社区序号0-x
-        uint256 endIndex     //截止社区序号(社区总量-1)
+        uint256 endIndex     //截止社区序号(最大为社区总量)
     ) public view returns(uint256[] memory) {
         
         uint256 rangeSize = endIndex - startIndex;
-        if(rangeSize < 1 )revert InvalidData();
+        uint256 totalMembers = getMemberCount();
+        if(rangeSize < 1 || endIndex > totalMembers)revert InvalidData();
+        if(rangeSize > 300)revert ValueTooHigh();
+
         uint256[] memory amounts = new uint256[](rangeSize);
         
         // 填充数据
         for(uint i = 0; i < rangeSize; i++) {
-            address whiteAddress = getCommunityMemberAtIndex(startIndex + i);
+            address member = getCommunityMemberAtIndex(startIndex + i);
             
             if (dataType == 1) {
                 // 查询社区业绩
-                amounts[i] = _communityPerformance[whiteAddress];
+                amounts[i] = _communityPerformance[member];
             } else if (dataType == 2) {
                 // 查询社区额外铸造奖励
-                amounts[i] = userInfo[whiteAddress].communitySubsidyMint;
+                amounts[i] = userInfo[member].communitySubsidyMint;
             } else if (dataType == 3) {
                 // 查询社区VID动态奖励
-                amounts[i] = userInfo[whiteAddress].vidRewardsFromCommunity;
+                amounts[i] = userInfo[member].vidRewardsFromCommunity;
             } else {
                 revert InvalidData();
             }
         }
         
-        _sortDescending(amounts);
+        //链下排序
         return amounts;
     }
 
     // ============================ 重构回调功能区域 ===================================
     /**
-    * @dev 重写approve -新人渐进式授权保护函数
-    * 新人授权初始1000额度，每使用授权3次翻10倍
+    * @dev 重写approve -新人渐进式授权保护函数，防止被骗
+    * 新人授权初始100Token额度，每使用授权3次翻10倍，最高100万！
     */
     function approve(address spender, uint256 amount) public virtual override returns (bool) {
-        address owner = _msgSender();
+        address sender = _msgSender();
         
-        // 新用户初始化授权保护额度限制
-        if (userStates[owner].currentLimit == 0) {
-            userStates[owner].currentLimit = 1000 * 10**6;
+        // 新用户初始化授权保护额度限制100枚Token
+        if (userStates[sender].currentLimit == 0) {
+            userStates[sender].currentLimit = 100 * 10**6;
         }
         
         // 限额保护检查
-        uint256 ApprovalAmount = userStates[owner].currentLimit;
-        if(amount > ApprovalAmount){revert ApprovalAmountTooHigh(ApprovalAmount);}
+        uint256 currentLimit = userStates[sender].currentLimit;
+        if(amount > currentLimit){revert ApprovalAmountTooHigh(currentLimit);}
         
         // 标准授权
-        _approve(owner, spender, amount);
+        _approve(sender, spender, amount);
         
         // 更新授权次数
-        userStates[owner].usageCount++;
+        userStates[sender].usageCount++;
         
-        // 每3次使用翻10倍授权保护限额
-        if (userStates[owner].usageCount % 3 == 0) {
-            userStates[owner].currentLimit *= 10;
+        // 每3次使用翻10倍授权保护，最高授权100万额度
+        if (userStates[sender].usageCount % 3 == 0) {
+
+            uint256 newLimit = currentLimit * 10;
+            uint256 maxLimit = 1000000 * 10**6;
+
+            userStates[sender].currentLimit = newLimit > maxLimit ? maxLimit : newLimit;
         }
-        
+
         return true;
     }
 
@@ -816,6 +864,7 @@ contract TokenBank is
         //更新数据信息
         userInfo[user].vidRewardsFromCommunity += rewardAmount;
         globalStats.allVIDRewardAmount += rewardAmount;
+
         //发放社区奖励
         _safeERC20Transfer(Token, user, rewardAmount);
     }
@@ -827,11 +876,12 @@ contract TokenBank is
     }
 
 // ============================ 查询数据返回函数区 ===================================
-    //获取个人的推荐关系
-    function getMyReferrer() public view returns (address) {
-        address user = _msgSender();
+
+    // 查询推荐关系
+    function getReferrer(address user) external view returns (address) {
         return refs[user];
     }
+
     //获取个人是否为社区
     function amICommunityMember() public view returns (bool) {
         address user = _msgSender();
@@ -850,22 +900,6 @@ contract TokenBank is
         return supply.getBnbFee();
     }
 
-    //获取个所有共振记录
-        // 获取个人所有存款记录（包括VID和USDT）
-    function getAllDeposits() internal view returns (Deposit[] memory) {
-        address user = _msgSender();
-        UserDeposits storage d = userDeposits[user];
-        
-        Deposit[] memory result = new Deposit[](d.count);
-        
-        for(uint256 i = 0; i < d.count; i++) {
-            uint256 index = (d.nextIndex + 19 - i) % 20;
-            result[i] = d.deposits[index];
-        }
-        
-        return result;
-    }
-
     //获取个人全息资料
     function getUserInfo() external view returns (UserInfo memory) {
         address user = _msgSender();
@@ -875,12 +909,6 @@ contract TokenBank is
     //查询全网统计数据
     function getGlobalStats() external view returns (GlobalStats memory) {
         return globalStats;
-    }
-
-    //查询全部社区业绩（调用现有函数）
-    function getAllCommunityPerformance() external view returns(uint256[] memory) {
-        uint256 totalMembers = getMemberCount();
-        return getCommunityData(1, 0, totalMembers);
     }
 
     // 个人排名查询函数
