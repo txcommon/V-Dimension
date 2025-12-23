@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title data-i18n="exchange.pageTitle">兑换中心 - 乐花联盟</title>
+    <title data-i18n="exchange.pageTitle">兑换中心</title>
+	<link rel="icon" href="./favicon.ico" type="image/x-icon">
+	<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
     <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -32,7 +34,7 @@
         .tab-scroll-container { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: none; margin-bottom: 20px; }
         .tab-scroll-container::-webkit-scrollbar { display: none; }
         .tab-nav { display: flex; gap: 12px; padding: 6px; background: rgba(255, 255, 255, 0.03); border-radius: 16px; border: 1px solid rgba(168, 85, 247, 0.2); min-width: max-content; }
-        .tab-item { padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 600; text-align: center; cursor: pointer; transition: all 0.3s; border: 1px solid transparent; white-space: nowrap; min-width: 140px; color: rgba(255, 255, 255, 0.7); }
+        .tab-item { padding: 12px 20px; border-radius: 12px; font-size: 15px; font-weight: 600; text-align: center; cursor: pointer; transition: all 0.3s; border: 1px solid transparent; white-space: nowrap; min-width: 140px; color: rgba(255, 255, 255, 0.8); }
         .tab-item:active { transform: scale(0.98); }
         .tab-item.active { background: linear-gradient(135deg, rgba(168, 85, 247, 0.3) 0%, rgba(217, 70, 239, 0.3) 100%); border-color: rgba(168, 85, 247, 0.5); box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3); color: #fff; }
 
@@ -46,58 +48,59 @@
 
         /* 兑换信息区 */
         .exchange-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .info-title { font-size: 14px; color: rgba(255, 255, 255, 0.6); display: flex; align-items: center; gap: 6px; }
-        .balance-display { font-size: 13px; color: rgba(255, 255, 255, 0.5); }
+        .info-title { font-size: 16px; color: rgba(255, 255, 255, 0.85); display: flex; align-items: center; gap: 6px; }
+        .balance-display { font-size: 15px; color: rgba(255, 255, 255, 0.75); }
         .balance-label { margin-right: 4px; }
-        .balance-value { color: rgba(255, 255, 255, 0.8); font-weight: 600; }
+        .balance-value { color: rgba(255, 255, 255, 0.9); font-weight: 600; }
 
         .exchange-row { background: rgba(0, 0, 0, 0.3); border-radius: 16px; padding: 20px 20px 8px 20px; margin-bottom: 20px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: 6px; }
         .exchange-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-        .exchange-label { font-size: 12px; color: rgba(255, 255, 255, 0.5); }
-        .exchange-amount { font-size: 20px; font-weight: 800; color: #fff; }
-        .exchange-amount-orange { background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .exchange-arrow-icon { font-size: 24px; color: rgba(168, 85, 247, 0.6); }
-        .contract-balance-inline { width: 100%; text-align: center; margin-top: 6px; font-size: 12px; color: #fb923c; font-weight: 500; }
+        .exchange-label { font-size: 14px; color: rgba(255, 255, 255, 0.8); }
+        .exchange-amount { font-size: 24px; font-weight: 800; color: #fff; }
+        .exchange-amount-orange { background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 15px rgba(251, 146, 60, 0.5); }
+        .exchange-arrow-icon { font-size: 24px; color: #a855f7; }
+        .contract-balance-inline { width: 100%; text-align: center; margin-top: 6px; font-size: 14px; color: #fb923c; font-weight: 500; }
         .contract-balance-inline span { font-weight: 600; }
 
         /* 兑换按钮 */
-        .exchange-btn { width: 100%; padding: 16px; border-radius: 16px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden; margin-bottom: 16px; }
+        .exchange-btn { width: 100%; padding: 16px; border-radius: 16px; border: none; font-size: 18px; font-weight: 700; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden; margin-bottom: 16px; }
         .exchange-btn::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.3); transform: translate(-50%, -50%); transition: width 0.6s, height 0.6s; }
         .exchange-btn:active::before { width: 300px; height: 300px; }
         .btn-enabled { background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%); color: #000; box-shadow: 0 8px 24px rgba(251, 146, 60, 0.4); }
         .btn-enabled:active { transform: scale(0.98); }
-        .btn-disabled { background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.3); cursor: not-allowed; }
+        .btn-disabled { background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.5); cursor: not-allowed; }
         .btn-warning { background: linear-gradient(135deg, #a855f7 0%, #d946ef 100%); color: #fff; box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4); }
         .btn-text { position: relative; z-index: 1; }
 
         /* 条件检查区 */
         .conditions { margin-bottom: 20px; }
-        .conditions-title { font-size: 14px; color: rgba(255, 255, 255, 0.6); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-        .condition-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255, 255, 255, 0.03); border-radius: 12px; margin-bottom: 8px; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .condition-label { font-size: 13px; color: rgba(255, 255, 255, 0.8); display: flex; align-items: center; gap: 8px; }
-        .condition-status { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 8px; }
+        .conditions-title { font-size: 16px; color: rgba(255, 255, 255, 0.85); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+        .condition-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255, 255, 255, 0.06); border-radius: 12px; margin-bottom: 8px; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .condition-label { font-size: 15px; color: rgba(255, 255, 255, 0.9); display: flex; align-items: center; gap: 8px; }
+        .condition-status { font-size: 14px; font-weight: 600; padding: 4px 10px; border-radius: 8px; }
         .status-fail { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-        .status-countdown { background: rgba(251, 146, 60, 0.2); color: #fb923c; font-family: 'Courier New', monospace; min-width: 120px; text-align: center; }
+        .status-countdown { background: rgba(251, 146, 60, 0.2); color: #fb923c; font-family: 'Courier New', monospace; min-width: 120px; text-align: center; animation: pulse-soft 2s ease-in-out infinite; }
+        @keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
         .status-ready { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .all-conditions-met { text-align: center; padding: 16px; color: #10b981; font-weight: 600; }
+        .all-conditions-met { text-align: center; padding: 16px; color: #10b981; font-weight: 600; font-size: 15px; text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
 
         /* 配额进度条 */
-        .quota-progress { margin: 16px 0; padding: 16px; background: rgba(0, 0, 0, 0.3); border-radius: 12px; border: 1px solid rgba(168, 85, 247, 0.2); }
-        .quota-title { font-size: 13px; color: rgba(255, 255, 255, 0.8); margin-bottom: 8px; font-weight: 600; }
+        .quota-progress { margin: 16px 0; padding: 16px; background: rgba(10, 5, 30, 0.6); border-radius: 12px; border: 1px solid rgba(168, 85, 247, 0.35); }
+        .quota-title { font-size: 15px; color: rgba(255, 255, 255, 0.9); margin-bottom: 8px; font-weight: 600; }
         .progress-bar { height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; overflow: hidden; margin-bottom: 8px; }
         .progress-fill { height: 100%; border-radius: 6px; transition: width 0.8s ease; }
         .progress-green { background: linear-gradient(90deg, #10b981 0%, #34d399 100%); }
         .progress-yellow { background: linear-gradient(90deg, #fbbf24 0%, #fcd34d 100%); }
         .progress-red { background: linear-gradient(90deg, #ef4444 0%, #f87171 100%); }
-        .quota-stats { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+        .quota-stats { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
         .quota-used { color: #fff; font-weight: 600; }
-        .quota-percent { color: rgba(255, 255, 255, 0.7); font-weight: 600; }
-        .quota-unlocked { text-align: center; padding: 12px; color: #10b981; font-weight: 600; font-size: 14px; }
+        .quota-percent { color: rgba(255, 255, 255, 0.8); font-weight: 600; }
+        .quota-unlocked { text-align: center; padding: 12px; color: #10b981; font-weight: 600; font-size: 15px; text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
 
         /* 提示信息 */
-        .tip-box { margin-top: 16px; padding: 12px 16px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 12px; }
-        .tip-title { font-size: 12px; color: #fbbf24; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
-        .tip-content { font-size: 12px; color: rgba(251, 191, 36, 0.8); line-height: 1.6; }
+        .tip-box { margin-top: 16px; padding: 14px 18px; background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 12px; }
+        .tip-title { font-size: 14px; color: #fcd34d; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; text-shadow: 0 0 10px rgba(251, 191, 36, 0.6); }
+        .tip-content { font-size: 14px; color: #fde68a; line-height: 1.7; text-shadow: 0 0 8px rgba(251, 191, 36, 0.3); }
 
         /* 底部导航 */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; padding: 12px 0 20px; background: rgba(26, 11, 61, 0.8); backdrop-filter: blur(20px); border-top: 1px solid rgba(168, 85, 247, 0.2); box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.3); z-index: 1000; }
@@ -199,8 +202,8 @@
                     <div class="tip-title">💡 温馨提示</div>
                     <div class="tip-content">
                         • 兑换间隔：8小时<br>
-                        • 流通量 < 2100万时：固定兑换 500 USDT<br>
-                        • 流通量 ≥ 2100万时：固定兑换 1000 USDT<br>
+                        • 流通量 < 2100万时：固定兑换 1000 USDT<br>
+                        • 流通量 ≥ 2100万时：固定兑换 3000 USDT<br>
                         • 配额限制：流通量 < 333亿时受配额限制
                     </div>
                 </div>
@@ -410,7 +413,6 @@
             setTimeout(() => toast.remove(), 2500);
         }
 
-        // 格式化数字 - 完整显示，保留2位小数
         function formatNumber(num, decimals = 6, displayDecimals = 3) {
             // 1. 转换为实际数量
             const actual = Number(num) / Math.pow(10, decimals);
@@ -469,7 +471,7 @@
             const { totalSupply, exchangeRate, mintRate, contractBalances } = state;
 
             // Tab 0: USDT → VID
-            const usdtPay = totalSupply < BASE_SUPPLY ? 500 : 1000;
+            const usdtPay = totalSupply < BASE_SUPPLY ? 1000 : 3000;
             const vidReceive0 = usdtPay / mintRate;
             document.getElementById('usdt-pay').textContent = usdtPay.toLocaleString();
             document.getElementById('usdt-receive').textContent = vidReceive0.toLocaleString('en-US', { maximumFractionDigits: 2 });
@@ -512,15 +514,23 @@
             // Tab 0: USDT → VID
             let html0 = '<div class="conditions-title">⚠️ 兑换条件</div>';
             let cond0Count = 0;
-            if (!isCommunity) { html0 += renderConditionItem('👥', '需成为社区成员', '未成为社区'); cond0Count++; }
-            if (communityCount < 30) { html0 += renderConditionItem('🏘️', '全网社区数量', `${communityCount}/30`); cond0Count++; }
-            if (totalRankedCommunities >= 1000 && !isRanked) { html0 += renderConditionItem('📊', '需入榜前1000', '未入榜'); cond0Count++; }
-            const nextUswap = timestamps.uswap + REMIN_TIME;
-            if (now < nextUswap) { html0 += renderConditionItem('⏰', '距下次兑换', formatCountdown(nextUswap - now), true); cond0Count++; }
-            if (totalSupply < SUPPLY_333B && Number(globalStats.totalRedeemedVID) >= Number(rateStats.vidQuota)) { html0 += renderConditionItem('📦', 'VID配额', '已用尽'); cond0Count++; }
-            if (balances.usdt < calculated.usdtPay) { html0 += renderConditionItem('💵', 'USDT余额不足', formatNumber(balances.usdt, 18)); cond0Count++; }
-            const vidNeeded0 = calculated.usdtPay / state.mintRate / 1e12;
-            if (contractBalances.vid < vidNeeded0) { html0 += renderConditionItem('🏦', '合约VID不足', '请稍后再试'); cond0Count++; }
+            
+            // 非社区用户只显示"限社区成员参与"
+            if (!isCommunity) {
+                html0 += renderConditionItem('👥', '限社区成员参与', '未成为社区');
+                cond0Count++;
+            } else {
+                // 社区用户显示其他不满足的条件
+                if (communityCount < 30) { html0 += renderConditionItem('🏘️', '全网社区数量', `${communityCount}/30`); cond0Count++; }
+                if (activeInterestCount < 5) { html0 += renderConditionItem('🔥', '直推生息人数', `${activeInterestCount}/5`); cond0Count++; }
+                if (communityCount >= 300 && !isRanked) { html0 += renderConditionItem('📊', '需入榜前1000', '未入榜'); cond0Count++; }
+                const nextUswap = timestamps.uswap + REMIN_TIME;
+                if (now < nextUswap) { html0 += renderConditionItem('⏰', '距下次兑换', formatCountdown(nextUswap - now), true); cond0Count++; }
+                if (totalSupply < SUPPLY_333B && Number(globalStats.totalRedeemedVID) >= Number(rateStats.vidQuota)) { html0 += renderConditionItem('📦', 'VID配额', '已用尽'); cond0Count++; }
+                if (balances.usdt < calculated.usdtPay) { html0 += renderConditionItem('💵', 'USDT余额不足', formatNumber(balances.usdt, 18)); cond0Count++; }
+                const vidNeeded0 = calculated.usdtPay / state.mintRate / 1e12;
+                if (contractBalances.vid < vidNeeded0) { html0 += renderConditionItem('🏦', '合约VID不足', '请稍后再试'); cond0Count++; }
+            }
             if (cond0Count === 0) html0 += '<div class="all-conditions-met">✅ 所有条件已满足</div>';
             document.getElementById('conditions-usdt-vid').innerHTML = html0;
             updateButton('usdt-vid', cond0Count === 0, isCommunity);
@@ -528,16 +538,23 @@
             // Tab 1: Vollar → BNB
             let html1 = '<div class="conditions-title">⚠️ 兑换条件</div>';
             let cond1Count = 0;
-            if (!isCommunity) { html1 += renderConditionItem('👥', '需成为社区成员', '未成为社区'); cond1Count++; }
-            if (activeInterestCount < 10) { html1 += renderConditionItem('🔥', '直推生息人数', `${activeInterestCount}/10`); cond1Count++; }
-            if (communityCount < 300) { html1 += renderConditionItem('🏘️', '全网社区数量', `${communityCount}/300`); cond1Count++; }
-            if (totalSupply < BASE_SUPPLY) { html1 += renderConditionItem('💎', '流通量要求', `${formatNumber(totalSupply, 6)}/2100万`); cond1Count++; }
-            if (totalRankedCommunities >= 1000 && !isRanked) { html1 += renderConditionItem('📊', '需入榜前1000', '未入榜'); cond1Count++; }
-            const nextBnb = timestamps.bnb + REMAX_TIME;
-            if (now < nextBnb) { html1 += renderConditionItem('⏰', '距下次兑换', formatCountdown(nextBnb - now), true); cond1Count++; }
-            if (balances.vollar < calculated.vollarBurn1) { html1 += renderConditionItem('🪙', 'Vollar余额不足', formatNumber(balances.vollar, 6)); cond1Count++; }
-            const bnbNeeded = calculated.vollarBurn1 * 1e3;
-            if (contractBalances.bnb < bnbNeeded) { html1 += renderConditionItem('🏦', '合约BNB不足', '请稍后再试'); cond1Count++; }
+            
+            // 非社区用户只显示"限社区成员参与"
+            if (!isCommunity) {
+                html1 += renderConditionItem('👥', '限社区成员参与', '未成为社区');
+                cond1Count++;
+            } else {
+                // 社区用户显示其他不满足的条件
+                if (activeInterestCount < 10) { html1 += renderConditionItem('🔥', '直推生息人数', `${activeInterestCount}/10`); cond1Count++; }
+                if (communityCount < 300) { html1 += renderConditionItem('🏘️', '全网社区数量', `${communityCount}/300`); cond1Count++; }
+                if (totalSupply < BASE_SUPPLY) { html1 += renderConditionItem('💎', '流通量要求', `${formatNumber(totalSupply, 6)}/2100万`); cond1Count++; }
+                if (communityCount >= 500 && !isRanked) { html1 += renderConditionItem('📊', '需入榜前1000', '未入榜'); cond1Count++; }
+                const nextBnb = timestamps.bnb + REMAX_TIME;
+                if (now < nextBnb) { html1 += renderConditionItem('⏰', '距下次兑换', formatCountdown(nextBnb - now), true); cond1Count++; }
+                if (balances.vollar < calculated.vollarBurn1) { html1 += renderConditionItem('🪙', 'Vollar余额不足', formatNumber(balances.vollar, 6)); cond1Count++; }
+                const bnbNeeded = calculated.vollarBurn1 * 1e3;
+                if (contractBalances.bnb < bnbNeeded) { html1 += renderConditionItem('🏦', '合约BNB不足', '请稍后再试'); cond1Count++; }
+            }
             if (cond1Count === 0) html1 += '<div class="all-conditions-met">✅ 所有条件已满足</div>';
             document.getElementById('conditions-vollar-bnb').innerHTML = html1;
             updateButton('vollar-bnb', cond1Count === 0, isCommunity);
@@ -545,16 +562,23 @@
             // Tab 2: Vollar → USDT
             let html2 = '<div class="conditions-title">⚠️ 兑换条件</div>';
             let cond2Count = 0;
-            if (!isCommunity) { html2 += renderConditionItem('👥', '需成为社区成员', '未成为社区'); cond2Count++; }
-            if (activeInterestCount < 10) { html2 += renderConditionItem('🔥', '直推生息人数', `${activeInterestCount}/10`); cond2Count++; }
-            if (totalSupply < BASE_BILLION) { html2 += renderConditionItem('💎', '流通量要求', `${formatNumber(totalSupply, 6)}/1亿`); cond2Count++; }
-            if (totalRankedCommunities >= 1000 && !isRanked) { html2 += renderConditionItem('📊', '需入榜前1000', '未入榜'); cond2Count++; }
-            if (totalSupply < SUPPLY_333B && Number(globalStats.allUSDTWithdrawn) >= Number(rateStats.usdtAllocation)) { html2 += renderConditionItem('📦', 'USDT配额', '已用尽'); cond2Count++; }
-            const nextUsdt = timestamps.usdt + REMAX_TIME;
-            if (now < nextUsdt) { html2 += renderConditionItem('⏰', '距下次兑换', formatCountdown(nextUsdt - now), true); cond2Count++; }
-            if (balances.vollar < calculated.vollarBurn2) { html2 += renderConditionItem('🪙', 'Vollar余额不足', formatNumber(balances.vollar, 6)); cond2Count++; }
-            const usdtNeeded = calculated.vollarBurn2 * 1e6;
-            if (contractBalances.usdt < usdtNeeded) { html2 += renderConditionItem('🏦', '合约USDT不足', '请稍后再试'); cond2Count++; }
+            
+            // 非社区用户只显示"限社区成员参与"
+            if (!isCommunity) {
+                html2 += renderConditionItem('👥', '限社区成员参与', '未成为社区');
+                cond2Count++;
+            } else {
+                // 社区用户显示其他不满足的条件
+                if (activeInterestCount < 10) { html2 += renderConditionItem('🔥', '直推生息人数', `${activeInterestCount}/10`); cond2Count++; }
+                if (totalSupply < BASE_BILLION) { html2 += renderConditionItem('💎', '流通量要求', `${formatNumber(totalSupply, 6)}/1亿`); cond2Count++; }
+                if (communityCount >= 1000 && !isRanked) { html2 += renderConditionItem('📊', '需入榜前1000', '未入榜'); cond2Count++; }
+                if (totalSupply < SUPPLY_333B && Number(globalStats.allUSDTWithdrawn) >= Number(rateStats.usdtAllocation)) { html2 += renderConditionItem('📦', 'USDT配额', '已用尽'); cond2Count++; }
+                const nextUsdt = timestamps.usdt + REMAX_TIME;
+                if (now < nextUsdt) { html2 += renderConditionItem('⏰', '距下次兑换', formatCountdown(nextUsdt - now), true); cond2Count++; }
+                if (balances.vollar < calculated.vollarBurn2) { html2 += renderConditionItem('🪙', 'Vollar余额不足', formatNumber(balances.vollar, 6)); cond2Count++; }
+                const usdtNeeded = calculated.vollarBurn2 * 1e6;
+                if (contractBalances.usdt < usdtNeeded) { html2 += renderConditionItem('🏦', '合约USDT不足', '请稍后再试'); cond2Count++; }
+            }
             if (cond2Count === 0) html2 += '<div class="all-conditions-met">✅ 所有条件已满足</div>';
             document.getElementById('conditions-vollar-usdt').innerHTML = html2;
             updateButton('vollar-usdt', cond2Count === 0, isCommunity);
