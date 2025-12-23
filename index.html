@@ -891,96 +891,18 @@
             }
         }
 		
-		/* iOS专属修复 - 美观优化版 */
+		/* iOS专属修复 - 放在CSS文件最后 */
 		@supports (-webkit-touch-callout: none) {
 			.section-card {
 				backdrop-filter: none !important;
 				-webkit-backdrop-filter: none !important;
-				
-				/* 优化背景：深色渐变 + 微光效果 */
-				background: 
-					linear-gradient(135deg, 
-						rgba(168, 85, 247, 0.15) 0%, 
-						rgba(217, 70, 239, 0.15) 50%,
-						rgba(26, 11, 61, 0.95) 100%
-					) !important;
-				
-				/* 增强边框效果 */
-				border: 1px solid rgba(168, 85, 247, 0.5) !important;
-				
-				/* 优化阴影和发光效果 */
-				box-shadow: 
-					0 10px 30px rgba(168, 85, 247, 0.3),
-					inset 0 1px 0 rgba(255, 255, 255, 0.1),
-					inset 0 0 30px rgba(168, 85, 247, 0.1) !important;
-				
-				position: relative;
-				overflow: hidden;
+				background: rgba(26, 11, 61, 0.8) !important;
+				border: 1px solid rgba(168, 85, 247, 0.4) !important;
 			}
 			
-			/* 添加顶部发光边缘 */
-			.section-card::before {
-				content: '';
-				position: absolute;
-				top: 0;
-				left: 10%;
-				right: 10%;
-				height: 1px;
-				background: linear-gradient(90deg, 
-					transparent, 
-					rgba(168, 85, 247, 0.8), 
-					transparent);
-				z-index: 1;
-			}
-			
-			/* 添加底部发光边缘 */
-			.section-card::after {
-				content: '';
-				position: absolute;
-				bottom: 0;
-				left: 10%;
-				right: 10%;
-				height: 1px;
-				background: linear-gradient(90deg, 
-					transparent, 
-					rgba(168, 85, 247, 0.4), 
-					transparent);
-				z-index: 1;
-			}
-			
-			/* 输入框美化 */
+			/* 同时修复输入框的显示问题 */
 			.input-wrapper {
-				background: rgba(255, 255, 255, 0.08) !important;
-				border: 1px solid rgba(168, 85, 247, 0.3) !important;
-				box-shadow: 
-					inset 0 2px 4px rgba(0, 0, 0, 0.2),
-					0 0 0 1px rgba(168, 85, 247, 0.1) !important;
-			}
-			
-			/* 输入框聚焦效果 */
-			.input-wrapper:focus-within {
-				border-color: rgba(168, 85, 247, 0.6) !important;
-				box-shadow: 
-					inset 0 2px 4px rgba(0, 0, 0, 0.2),
-					0 0 0 2px rgba(168, 85, 247, 0.2) !important;
-				background: rgba(255, 255, 255, 0.12) !important;
-			}
-			
-			/* 确保文字清晰 */
-			.input-label,
-			#availableBalance {
-				color: rgba(255, 255, 255, 0.9) !important;
-				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-			}
-			
-			/* MAX按钮美化 */
-			.max-btn {
-				background: linear-gradient(135deg, 
-					rgba(168, 85, 247, 0.3) 0%, 
-					rgba(217, 70, 239, 0.3) 100%) !important;
-				border: 1px solid rgba(168, 85, 247, 0.5) !important;
-				color: #fff !important;
-				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+				background: rgba(255, 255, 255, 0.1) !important;
 			}
 		}
 
@@ -2739,28 +2661,39 @@
                 return;
             }
             
-            confirmBtn.textContent = '交易确认中...';
+			confirmBtn.textContent = '交易确认中...';
 
-            const feeAmountWei = await contract.methods.getPayBNBFee().call();
-            
-			// 使用统一的 sendTransaction 方法
-			await web3Manager.sendTransaction(
-				contract,
-				'bindReferral',
-				[referrerAddress],  // 推荐人地址参数
-				{
-					value: feeAmountWei  // 需要支付的BNB
+			const feeAmountWei = await contract.methods.getPayBNBFee().call();
+
+			try {
+				// 使用统一的 sendTransaction 方法
+				await web3Manager.sendTransaction(
+					contract,
+					'bindReferral',
+					[referrerAddress],  // 推荐人地址参数
+					{
+						value: feeAmountWei  // 需要支付的BNB
+					}
+				);
+			} catch (txError) {
+				console.error('交易发送失败:', txError);
+				throw txError; // 重新抛出，让外层catch处理
+			}
+
+			userState.hasReferrer = true;
+			closeBindModal();
+
+			showSuccess(`✅ 推荐关系绑定成功！`);
+
+			// 异步更新数据
+			setTimeout(async () => {
+				try {
+					await loadContractData();
+					devLog('数据更新完成');
+				} catch (updateError) {
+					console.error('更新数据失败（不影响交易成功）:', updateError);
 				}
-			);
-
-            devLog('绑定交易成功', tx.transactionHash);
-            
-            userState.hasReferrer = true;
-            closeBindModal();
-            
-            await loadContractData();
-            
-            showSuccess(`✅ 推荐关系绑定成功！`);
+			}, 2000);
             
         } catch (error) {
             console.error('绑定交易失败:', error);
