@@ -63,17 +63,23 @@ interface IPancakeRouter {
     ) external returns (uint amountA, uint amountB);
 }
 
+// 推荐合约接口
+interface IReferralContract {
+    function getReferrer(address user) external view returns (address);
+}
+
 import "./ReentrancyGuard.sol";
 
 contract VDSTrinityProtocol is ReentrancyGuard{
     // ============ 🔱 三位一体核心地址 ============
-    address internal constant VID = 0x65b8F22EF3F2fF7072744Fc4dC919E8e6dbE5E6A;               // 🟣 价值桥梁
+    address internal constant VID = 0x3673FFa138427794CcB6Af82C6D4156bdc33e1b7;               // 🟣 价值桥梁
     address internal constant USDT = 0x55d398326f99059fF775485246999027B3197955;              // 🔵 稳定入口
-    address internal constant VDS = 0xA92BD5D04121a6D02CC687129963dB9C2665cd05;               // 🟢 股权代币
-    address internal constant LP_PAIR = 0xf3813595539Ab2E697f0d06e591C94A3eBAB0dF9;           // 🔵🟣 USDT-VID交易对
-    address internal constant VDS_VID_PAIR = 0x92Ee2c51328b8a330681763d86685E86aD441ded;      // 🟣🟢 VDS-VID交易对
-    address internal constant DIVIDEND_RESERVE = 0xe428dcd60d1755Ca19f156C14E4bfaeaf2DA90D3;  // 🏦 分红储备合约
+    address internal constant VDS = 0xAF6aD9615383132139b51561F444CF2A956b55d5;               // 🟢 股权代币
+    address internal constant LP_PAIR = 0xF73ab7DB5a76a2E1e9BEA188432B215C31fF1c17;           // 🔵🟣 USDT-VID交易对
+    address internal constant VDS_VID_PAIR = 0x0a58A01ECA4697D19FC0F43796D63dbbe4803bdD;      // 🟣🟢 VDS-VID交易对
+    address internal constant DIVIDEND_RESERVE = 0x54925aAdf2370c24D2548A3f71c166bdD7c56C34;  // 🏦 分红储备合约
     address public constant DEAD = 0x000000000000000000000000000000000000dEaD;                // ⚰️ 黑洞地址
+    address public referralContract;                                                          // 推荐合约地址
     // ============ 📍 路由合约地址 ============
     address internal constant PANCAKE_ROUTER = 0x10ED43C718714eb63d5aA57B78B54704E256024E;
     
@@ -99,6 +105,10 @@ contract VDSTrinityProtocol is ReentrancyGuard{
     uint256 internal totalUSDTDeposited;         // 💰 累计存入USDT
     uint256 internal netVDSOutflow;              // 💰 净流出VDS总量
     uint256 internal lastRebalanceTime;          // ⏰ 最后平衡时间
+    uint256 public requireAmount = 10000e18;
+    uint256 public rate1 = 10;
+    uint256 public rate2 = 5;
+    uint256 public rate3 = 2;
     
     // ============ 👤 用户数据结构 ============
     struct UserInfo {
@@ -175,80 +185,139 @@ contract VDSTrinityProtocol is ReentrancyGuard{
     // ============ 🔵 核心存款函数 ============
     function deposit(uint256 usdtAmount) external nonReentrant {
         UserInfo storage user = userInfo[msg.sender];
+        
+        // 1. 验证和接收USDT
+        _validateAndReceiveUSDT(usdtAmount);
+        
+        // 2. 获取池子数据
+        (uint256 vidReserve, uint256 usdtReserve) = _getUSDTVIDReserves();
+        
+        // 3. 计算购买和流动性分配
+        (uint256 usdtForBuy, uint256 usdtForLiquidity) = _calculateAllocation(usdtAmount, usdtReserve);
+        
+        // 4. 处理流动性添加
+        uint256 lpBurned = _handleLiquidity(vidReserve, usdtReserve, usdtForLiquidity);
+        
+        // 5. 处理VID购买
+        (uint256 vidBought, uint256 treasuryVID, uint256 contractVID) = _handleVIDPurchase(usdtForBuy);
+        
+        // 6. 计算VDS奖励
+        uint256 vdsReward = _calculateVDSReward(usdtAmount);
+         require(
+        IERC20(VDS).balanceOf(address(this)) >= user.pendingVDS + vdsReward,
+            "Trinity: Contract VDS insufficient"
+        );
+        
+        // 7. 更新用户和全局状态
+        _updateDepositState(user, usdtAmount, vdsReward);
+        
+        // 8.处理推荐奖励
+        _processReferral(msg.sender, vdsReward);
+        
+        // 9. 发射事件
+        emit Deposit(msg.sender, usdtAmount, vidBought, treasuryVID, contractVID, lpBurned, vdsReward);
+        _emitTrinityStatus();
+    }
+
+    // ============ 辅助函数定义 ============
+
+    function _validateAndReceiveUSDT(uint256 usdtAmount) private {
         require(usdtAmount >= MIN_DEPOSIT, "Trinity: Below minimum");
         require(usdtAmount <= MAX_DEPOSIT, "Trinity: Exceeds maximum");
         
-        // 💳 接收用户USDT
-        require(IERC20(USDT).transferFrom(msg.sender, address(this), usdtAmount), 
-                "Trinity: USDT transfer failed");
+        require(
+            IERC20(USDT).transferFrom(msg.sender, address(this), usdtAmount),
+            "Trinity: USDT transfer failed"
+        );
+    }
+
+    function _calculateAllocation(uint256 usdtAmount, uint256 usdtReserve) 
+        private 
+        pure 
+        returns (uint256 usdtForBuy, uint256 usdtForLiquidity) 
+    {
+        uint256 baseBuy = usdtAmount * BUY_RATIO / RATIO_DENOMINATOR;
         
-        // 📊 分配比例
-        uint256 usdtForBuy = usdtAmount * BUY_RATIO / RATIO_DENOMINATOR;
-        uint256 usdtForLiquidity = usdtAmount - usdtForBuy;
-        
-        // 🌊 先添加流动性（稳定价格）
-        uint256 lpBurned = 0;
-        if (usdtForLiquidity > 0) {
-            (uint256 vidReserve, uint256 usdtReserve) = _getUSDTVIDReserves();
-            require(usdtReserve > 0, "Trinity: No USDT in pool");
-            
-            uint256 vidForLiquidity = usdtForLiquidity * vidReserve / usdtReserve;
-            
-            require(IERC20(VID).balanceOf(address(this)) >= vidForLiquidity, 
-                    "Trinity: Insufficient VID for liquidity");
-            require(IERC20(USDT).balanceOf(address(this)) >= usdtForLiquidity,
-                    "Trinity: Insufficient USDT for liquidity");
-            
-            lpBurned = _addLiquidityDirect(vidForLiquidity, usdtForLiquidity);
+        if (usdtReserve >= 30000e18) {
+            usdtForBuy = baseBuy;
+        } else if (usdtReserve >= 10000e18) {
+            usdtForBuy = baseBuy * 5 / 10;
+        } else {
+            usdtForBuy = baseBuy * 1 / 10;
         }
         
-        // 🟣 后购买VID
-        uint256 vidBought = 0;
-        uint256 treasuryVID = 0;
-        uint256 contractVID = 0;
+        usdtForLiquidity = usdtAmount - usdtForBuy;
+    }
+
+    function _handleLiquidity(
+        uint256 vidReserve,
+        uint256 usdtReserve,
+        uint256 usdtForLiquidity
+    ) private returns (uint256 lpBurned) {
+        if (usdtForLiquidity == 0) return 0;
         
-        if (usdtForBuy > 0) {
-           
-            vidBought = _swapUSDTForVIDDirect(usdtForBuy);
+        require(usdtReserve > 0, "Trinity: No USDT in pool");
+        
+        uint256 vidForLiquidity = usdtForLiquidity * vidReserve / usdtReserve;
+        
+        require(
+            IERC20(VID).balanceOf(address(this)) >= vidForLiquidity,
+            "Trinity: Insufficient VID for liquidity"
+        );
+        require(
+            IERC20(USDT).balanceOf(address(this)) >= usdtForLiquidity,
+            "Trinity: Insufficient USDT for liquidity"
+        );
+        
+        return _addLiquidityDirect(vidForLiquidity, usdtForLiquidity);
+    }
 
-            uint256 treasuryPercent = _calculateTreasuryPercent();
-
-            treasuryVID = vidBought * treasuryPercent / RATIO_DENOMINATOR;
-            contractVID = vidBought - treasuryVID;
-            
-            if (treasuryVID > 0) {
-                require(IERC20(VID).transfer(DIVIDEND_RESERVE, treasuryVID), 
-                        "Trinity: Treasury transfer failed");
-            }
-            
-            emit VIDPurchased(usdtForBuy, vidBought, treasuryVID, contractVID);
+    function _handleVIDPurchase(uint256 usdtForBuy) 
+        private 
+        returns (uint256 vidBought, uint256 treasuryVID, uint256 contractVID) 
+    {
+        if (usdtForBuy == 0) return (0, 0, 0);
+        
+        vidBought = _swapUSDTForVIDDirect(usdtForBuy);
+        
+        uint256 treasuryPercent = _calculateTreasuryPercent();
+        treasuryVID = vidBought * treasuryPercent / RATIO_DENOMINATOR;
+        contractVID = vidBought - treasuryVID;
+        
+        if (treasuryVID > 0) {
+            require(
+                IERC20(VID).transfer(DIVIDEND_RESERVE, treasuryVID),
+                "Trinity: Treasury transfer failed"
+            );
         }
+        
+        emit VIDPurchased(usdtForBuy, vidBought, treasuryVID, contractVID);
+    }
 
-        // 🎁 计算VDS股权奖励
+    function _calculateVDSReward(uint256 usdtAmount) private view returns (uint256) {
         (uint256 finalVIDReserve, uint256 finalUSDTReserve) = _getUSDTVIDReserves();
         require(finalUSDTReserve > 0, "Trinity: Cannot calculate reward");
         
-        // 计算全部USDT能买到的VID数量（按添加流动性后的价格）
         uint256 totalVIDForUSDT = usdtAmount * finalVIDReserve / finalUSDTReserve;
-        
-        // VDS奖励计算：min(全部USDT能买到的VID, USDT换算的VDS)
         uint256 vdsForUSDT = usdtAmount / 1e12;
-        uint256 vdsReward = _min(totalVIDForUSDT, vdsForUSDT);
+        
+        return _min(totalVIDForUSDT, vdsForUSDT);
+    }
 
-        // 📝 更新用户状态
+    function _updateDepositState(
+        UserInfo storage user,
+        uint256 usdtAmount,
+        uint256 vdsReward
+    ) private {
         user.totalDeposited += usdtAmount;
         user.pendingVDS += vdsReward;
         user.depositTime = block.timestamp;
         
-        // 📈 更新全局状态
         totalUSDTDeposited += usdtAmount;
         netVDSOutflow += vdsReward;
-        require(IERC20(VDS).balanceOf(address(this)) >= user.pendingVDS, "Insufficient VDS");
-        
-        // 📡 发射存款事件
-        emit Deposit(msg.sender, usdtAmount, vidBought, treasuryVID, contractVID, lpBurned, vdsReward);
-        
-        // 🎯 更新系统状态
+    }
+
+    function _emitTrinityStatus() private {
         emit TrinityStatus(
             totalUSDTDeposited,
             IERC20(VID).balanceOf(address(this)),
@@ -405,6 +474,39 @@ contract VDSTrinityProtocol is ReentrancyGuard{
         return lpReceived;
     }
     
+    // ============ 处理推荐关系奖励 ============
+    function _processReferral(address user, uint256 amount) internal {
+        // 获取用户的推荐人
+        address currentRef = getUserReferrer(user);
+
+        uint256 searchCount = 0;
+        uint256 searchPromotional = 0;
+        //第二阶段：如果社区数量不足3个，继续在推荐链中寻找剩余社区
+        while (currentRef != address(0)  && searchPromotional < 3 && searchCount < 77) {
+            
+            //只处理符合注池要求的推广者奖励
+            if (userInfo[currentRef].totalDeposited >= requireAmount) {
+
+                if(searchPromotional == 0){
+                    userInfo[currentRef].pendingVDS += amount * rate1 / 100;
+                }
+                if(searchPromotional == 1){
+                    userInfo[currentRef].pendingVDS += amount * rate2 / 100;
+                }
+                if(searchPromotional == 2){
+                    userInfo[currentRef].pendingVDS += amount * rate3 / 100;
+                }
+
+                searchPromotional++;
+            }
+            //循环查找符合要求的推荐者
+            currentRef = getUserReferrer(currentRef);
+            //增加遍历深度
+            searchCount++;
+        }
+
+    }
+
     // ============ 📊 查询函数 ============
 
     // 1. 获取三位一体协议整体状态
@@ -425,7 +527,7 @@ contract VDSTrinityProtocol is ReentrancyGuard{
 
     // 2. 获取VDS-VID交易对池子状态
     function getVDSVIDPoolStatus() external view returns (
-        uint256 currentRatio,     // ⚖️ 当前VID/VDS比率（放大100倍平衡精度）
+        uint256 currentRatio,     // ⚖️ 当前VID/VDS比价
         uint256 nextRebalance,    // 🔄 下次平衡所需VID金额
         uint256 nextReTimer       // ⏰ 下次平衡时间
     ) {
@@ -457,6 +559,17 @@ contract VDSTrinityProtocol is ReentrancyGuard{
         );
     }
     
+    // 查询用户的推荐人
+    function getUserReferrer(address user) public view returns (address) {
+        // 创建接口实例
+        IReferralContract referral = IReferralContract(referralContract);
+        
+        // 调用推荐合约的 getReferrer 函数
+        address referrer = referral.getReferrer(user);
+        
+        return referrer;
+    }
+
     // ============ 🛠️ 内部辅助函数 ============
     //获取USDT/VID交易池数据
     function _getUSDTVIDReserves() internal view returns (uint256 vidReserve, uint256 usdtReserve) {
@@ -486,10 +599,9 @@ contract VDSTrinityProtocol is ReentrancyGuard{
     }
     //计算VID注入分红合约比例
     function _calculateTreasuryPercent() internal view returns (uint256) {
-        if (netVDSOutflow >= 7777e8) return 3333;
-        if (netVDSOutflow >= 5555e8) return 5555;
         if (netVDSOutflow >= 3333e8) return 6666;
-        return 7777;
+        if (netVDSOutflow >= 888e8) return 7777;
+        return 8888;
     }
 
     // ✅ 计算平衡最低需要的VID数量
@@ -510,10 +622,7 @@ contract VDSTrinityProtocol is ReentrancyGuard{
     
     //计算VDS平衡比率
     function _calculateVDSRate() internal view returns (uint256) {
-        if (netVDSOutflow >= 5555e8) return 20;
-        if (netVDSOutflow >= 3333e8) return 30;
-        if (netVDSOutflow >= 2222e8) return 40;
-        if (netVDSOutflow >= 1111e8) return 50;
+        if (netVDSOutflow >= 888e8) return 50;
         if (netVDSOutflow >= 555e8) return 60;
         if (netVDSOutflow >= 222e8) return 70;
         if (netVDSOutflow >= 111e8) return 80;
@@ -535,6 +644,17 @@ contract VDSTrinityProtocol is ReentrancyGuard{
         require(newOwner != address(0), "Invalid address");
         emit OwnershipTransferred(owner, newOwner);
         owner = newOwner;
+    }
+    //设置推荐合约
+    function updateReferralContract(address refContract) external onlyOwner {
+        referralContract = refContract;
+    }
+    //设置推荐奖励
+    function updateReferralRate(uint256 R0, uint256 R1,uint256 R2,uint256 R3) external onlyOwner {
+        requireAmount = R0;
+        rate1 = R1;
+        rate2 = R2;
+        rate3 = R3;
     }
 
 }
