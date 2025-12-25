@@ -11,12 +11,12 @@ const CONFIG = {
   
   // 合约地址
   CONTRACTS: {
-    TokenBank: '0x924B8bfEC7B02df5e5424A624b843F9f2169807d',
-    Temple: '0x79b289fC67EfF8484bFd34720dFa7825425F8a69',
-    VID: '0x3673FFa138427794CcB6Af82C6D4156bdc33e1b7',
+    TokenBank: '0xD0B4502e203107B557D1f39257248a680cb47eA0',
+    Temple: '0x65BC36e23EF148efeBD6ad65E817e07B5598AB9A',
+    VID: '0x407E45963dDa27b1E3c0feB9a60a151D567e7135',
     USDT: '0x55d398326f99059fF775485246999027B3197955',
     VDS: '0xAF6aD9615383132139b51561F444CF2A956b55d5',
-	TRINITY: '0x79abc0A7463e586812ed2E3df343AB464513820d',
+	TRINITY: '0xe4f04d723727e629a106b7aa8B193984F673F45D',
   },
   
   // 代币精度
@@ -166,6 +166,7 @@ const ERC20_ABI = [
 ]
 // VDSTRINITY ABI（完整版）
 const VDSTRINITY_ABI = [
+[
 	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
@@ -497,6 +498,25 @@ const VDSTRINITY_ABI = [
 		"type": "function"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "getUserReferrer",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [],
 		"name": "getVDSVIDPoolStatus",
 		"outputs": [
@@ -538,6 +558,71 @@ const VDSTRINITY_ABI = [
 		"type": "function"
 	},
 	{
+		"inputs": [],
+		"name": "rate1",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "rate2",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "rate3",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "referralContract",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "requireAmount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -546,6 +631,47 @@ const VDSTRINITY_ABI = [
 			}
 		],
 		"name": "transferOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "refContract",
+				"type": "address"
+			}
+		],
+		"name": "updateReferralContract",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "R0",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "R1",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "R2",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "R3",
+				"type": "uint256"
+			}
+		],
+		"name": "updateReferralRate",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -581,17 +707,17 @@ const TOKENBANK_ABI = [
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "_token",
+				"name": "_vid",
 				"type": "address"
 			},
 			{
 				"internalType": "address",
-				"name": "_token2",
+				"name": "_usdt",
 				"type": "address"
 			},
 			{
 				"internalType": "address",
-				"name": "_InitialContract",
+				"name": "_initialContract",
 				"type": "address"
 			}
 		],
@@ -863,7 +989,7 @@ const TOKENBANK_ABI = [
 	},
 	{
 		"inputs": [],
-		"name": "OnlyTop1000",
+		"name": "OnlyTop100",
 		"type": "error"
 	},
 	{
@@ -1136,31 +1262,6 @@ const TOKENBANK_ABI = [
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "costAmount",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
-			}
-		],
-		"name": "InterestActivated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
 				"name": "interestAmount",
 				"type": "uint256"
 			},
@@ -1357,7 +1458,7 @@ const TOKENBANK_ABI = [
 	},
 	{
 		"inputs": [],
-		"name": "Token",
+		"name": "USDT",
 		"outputs": [
 			{
 				"internalType": "contract IERC20",
@@ -1370,7 +1471,7 @@ const TOKENBANK_ABI = [
 	},
 	{
 		"inputs": [],
-		"name": "Token2",
+		"name": "VID",
 		"outputs": [
 			{
 				"internalType": "contract IERC20",
@@ -1590,29 +1691,29 @@ const TOKENBANK_ABI = [
 				"type": "uint256"
 			},
 			{
-				"internalType": "uint256[6]",
+				"internalType": "uint256[5]",
 				"name": "layerSizesArray",
-				"type": "uint256[6]"
+				"type": "uint256[5]"
 			},
 			{
-				"internalType": "uint256[6]",
+				"internalType": "uint256[5]",
 				"name": "layerCapacitiesArray",
-				"type": "uint256[6]"
+				"type": "uint256[5]"
 			},
 			{
-				"internalType": "uint256[6]",
+				"internalType": "uint256[5]",
 				"name": "thresholds",
-				"type": "uint256[6]"
+				"type": "uint256[5]"
 			},
 			{
-				"internalType": "uint256[6]",
+				"internalType": "uint256[5]",
 				"name": "topPerformances",
-				"type": "uint256[6]"
+				"type": "uint256[5]"
 			},
 			{
-				"internalType": "uint256[6]",
+				"internalType": "uint256[5]",
 				"name": "minPerformances",
-				"type": "uint256[6]"
+				"type": "uint256[5]"
 			}
 		],
 		"stateMutability": "view",
@@ -1625,58 +1726,48 @@ const TOKENBANK_ABI = [
 			{
 				"components": [
 					{
-						"internalType": "uint256",
-						"name": "startTimer",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "userCount",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
+						"internalType": "uint64",
 						"name": "allTotalAmount",
-						"type": "uint256"
+						"type": "uint64"
 					},
 					{
-						"internalType": "uint256",
-						"name": "allVIDMintedVollar",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "allUSDTMintedVollar",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "allCompoundInterest",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
+						"internalType": "uint64",
 						"name": "allTotalVIDResonance",
-						"type": "uint256"
+						"type": "uint64"
 					},
 					{
-						"internalType": "uint256",
+						"internalType": "uint64",
+						"name": "allVIDMintedVollar",
+						"type": "uint64"
+					},
+					{
+						"internalType": "uint64",
+						"name": "allCompoundInterest",
+						"type": "uint64"
+					},
+					{
+						"internalType": "uint128",
 						"name": "allTotalUSDTResonance",
-						"type": "uint256"
+						"type": "uint128"
 					},
 					{
-						"internalType": "uint256",
-						"name": "allVIDRewardAmount",
-						"type": "uint256"
+						"internalType": "uint128",
+						"name": "allUSDTMintedVollar",
+						"type": "uint128"
 					},
 					{
-						"internalType": "uint256",
+						"internalType": "uint128",
 						"name": "totalUSDTReceived",
-						"type": "uint256"
+						"type": "uint128"
+					},
+					{
+						"internalType": "uint128",
+						"name": "totalRedeemedVID",
+						"type": "uint128"
 					},
 					{
 						"internalType": "uint256",
-						"name": "totalRedeemedVID",
+						"name": "allTotalAmountS",
 						"type": "uint256"
 					},
 					{
@@ -1696,32 +1787,23 @@ const TOKENBANK_ABI = [
 					},
 					{
 						"internalType": "uint256",
-						"name": "allTotalAmountS",
+						"name": "allVIDRewardAmount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "userCount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "startTimer",
 						"type": "uint256"
 					}
 				],
 				"internalType": "struct UserDataManager.GlobalStats",
 				"name": "",
 				"type": "tuple"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "layer",
-				"type": "uint256"
-			}
-		],
-		"name": "getLayerPerformanceRanking",
-		"outputs": [
-			{
-				"internalType": "uint256[]",
-				"name": "",
-				"type": "uint256[]"
 			}
 		],
 		"stateMutability": "view",
@@ -1819,49 +1901,44 @@ const TOKENBANK_ABI = [
 			{
 				"components": [
 					{
-						"internalType": "uint256",
+						"internalType": "uint64",
 						"name": "totalMintedVollar",
-						"type": "uint256"
+						"type": "uint64"
 					},
 					{
-						"internalType": "uint256",
-						"name": "vollarFromVID",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "vollarFromUSDT",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "personalHoldingInterest",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "communitySubsidyMint",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
+						"internalType": "uint64",
 						"name": "vidResonanceAmount",
-						"type": "uint256"
+						"type": "uint64"
 					},
 					{
-						"internalType": "uint256",
-						"name": "usdtResonanceAmount",
-						"type": "uint256"
+						"internalType": "uint64",
+						"name": "vollarFromVID",
+						"type": "uint64"
 					},
 					{
-						"internalType": "uint256",
+						"internalType": "uint64",
+						"name": "personalHoldingInterest",
+						"type": "uint64"
+					},
+					{
+						"internalType": "uint128",
+						"name": "exchangedBurnedVollar",
+						"type": "uint128"
+					},
+					{
+						"internalType": "uint128",
+						"name": "exchangedBNB",
+						"type": "uint128"
+					},
+					{
+						"internalType": "uint128",
 						"name": "vidRewardsFromRef",
-						"type": "uint256"
+						"type": "uint128"
 					},
 					{
-						"internalType": "uint256",
+						"internalType": "uint128",
 						"name": "vidRewardsFromCommunity",
-						"type": "uint256"
+						"type": "uint128"
 					},
 					{
 						"internalType": "uint256",
@@ -1875,7 +1952,12 @@ const TOKENBANK_ABI = [
 					},
 					{
 						"internalType": "uint256",
-						"name": "exchangedBNB",
+						"name": "vollarFromUSDT",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "usdtResonanceAmount",
 						"type": "uint256"
 					},
 					{
@@ -1890,7 +1972,7 @@ const TOKENBANK_ABI = [
 					},
 					{
 						"internalType": "uint256",
-						"name": "exchangedBurnedVollar",
+						"name": "communitySubsidyMint",
 						"type": "uint256"
 					}
 				],
@@ -1950,48 +2032,24 @@ const TOKENBANK_ABI = [
 		"name": "getUserRefInterestStatus",
 		"outputs": [
 			{
-				"components": [
-					{
-						"internalType": "address",
-						"name": "myReferrer",
-						"type": "address"
-					},
-					{
-						"internalType": "address",
-						"name": "myReferrerCommunity",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "totalFirstLevelMembers",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "activeInterestCount",
-						"type": "uint256"
-					},
-					{
-						"components": [
-							{
-								"internalType": "address",
-								"name": "memberAddress",
-								"type": "address"
-							},
-							{
-								"internalType": "bool",
-								"name": "interestStatus",
-								"type": "bool"
-							}
-						],
-						"internalType": "struct ReferralManager.MemberStatus[]",
-						"name": "memberStatuses",
-						"type": "tuple[]"
-					}
-				],
-				"internalType": "struct ReferralManager.UserRefInterestStatus",
-				"name": "status",
-				"type": "tuple"
+				"internalType": "address",
+				"name": "myReferrer",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "myReferrerCommunity",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "totalFirstLevelMembers",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "activeInterestCount",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
