@@ -246,11 +246,11 @@
                         • 兑换间隔：30天<br>
                         • 兑换金额：100 Vollar × 社区倍率<br>
                         • 根据合约BNB余额自动调整：<br>
-                        &nbsp;&nbsp;≥3000 BNB: 正常兑换<br>
-                        &nbsp;&nbsp;≥1000 BNB: 减10倍<br>
-                        &nbsp;&nbsp;≥300 BNB: 减20倍<br>
-                        &nbsp;&nbsp;≥100 BNB: 减30倍<br>
-                        &nbsp;&nbsp;<100 BNB: 减100倍
+                        &nbsp;&nbsp;≥1000 BNB: 正常兑换<br>
+                        &nbsp;&nbsp;≥300 BNB: 减10倍<br>
+                        &nbsp;&nbsp;≥100 BNB: 减20倍<br>
+                        &nbsp;&nbsp;≥30 BNB: 减30倍<br>
+                        &nbsp;&nbsp;<30 BNB: 减100倍
                     </div>
                 </div>
             </div>
@@ -301,11 +301,11 @@
                         • 兑换间隔：30天<br>
                         • 兑换金额：500 Vollar × 社区倍率<br>
                         • 根据合约USDT余额自动调整：<br>
-                        &nbsp;&nbsp;≥5000万: 正常兑换<br>
-                        &nbsp;&nbsp;≥3000万: 减10倍<br>
-                        &nbsp;&nbsp;≥2000万: 减20倍<br>
-                        &nbsp;&nbsp;≥1000万: 减30倍<br>
-                        &nbsp;&nbsp;<1000万: 减100倍
+                        &nbsp;&nbsp;≥3000万: 正常兑换<br>
+                        &nbsp;&nbsp;≥2000万: 减10倍<br>
+                        &nbsp;&nbsp;≥1000万: 减20倍<br>
+                        &nbsp;&nbsp;≥300万: 减30倍<br>
+                        &nbsp;&nbsp;<300万: 减100倍
                     </div>
                 </div>
             </div>
@@ -346,7 +346,7 @@
                     <div class="tip-content">
                         • 兑换间隔：30天<br>
                         • 固定兑换：100,000 Vollar<br>
-                        • 仅限入榜社区（前1000名）<br>
+                        • 仅限入榜社区（前100名）<br>
                         • 流通量需达到 1000亿 Vollar
                     </div>
                 </div>
@@ -480,10 +480,10 @@
             // Tab 1: Vollar → BNB
             let vollarBurn1 = 100 * exchangeRate;
             const bnbBalance = contractBalances.bnb;
-            if (bnbBalance < 100e18) vollarBurn1 /= 100;
-            else if (bnbBalance < 300e18) vollarBurn1 /= 30;
-            else if (bnbBalance < 1000e18) vollarBurn1 /= 20;
-            else if (bnbBalance < 3000e18) vollarBurn1 /= 10;
+            if (bnbBalance < 30e18) vollarBurn1 /= 100;
+            else if (bnbBalance < 100e18) vollarBurn1 /= 30;
+            else if (bnbBalance < 300e18) vollarBurn1 /= 20;
+            else if (bnbBalance < 1000e18) vollarBurn1 /= 10;
             const bnbReceive = vollarBurn1 * 0.001;
             document.getElementById('vollar-bnb-burn').textContent = vollarBurn1.toLocaleString('en-US', { maximumFractionDigits: 2 });
             document.getElementById('bnb-receive').textContent = bnbReceive.toLocaleString('en-US', { maximumFractionDigits: 4 });
@@ -492,10 +492,10 @@
             // Tab 2: Vollar → USDT
             let vollarBurn2 = 500 * exchangeRate;
             const usdtBalance = contractBalances.usdt;
-            if (usdtBalance < 10000000e18) vollarBurn2 /= 100;
-            else if (usdtBalance < 20000000e18) vollarBurn2 /= 30;
-            else if (usdtBalance < 30000000e18) vollarBurn2 /= 20;
-            else if (usdtBalance < 50000000e18) vollarBurn2 /= 10;
+            if (usdtBalance < 3000000e18) vollarBurn2 /= 100;
+            else if (usdtBalance < 10000000e18) vollarBurn2 /= 30;
+            else if (usdtBalance < 20000000e18) vollarBurn2 /= 20;
+            else if (usdtBalance < 30000000e18) vollarBurn2 /= 10;
             const usdtReceive2 = vollarBurn2;
             document.getElementById('vollar-usdt-burn').textContent = vollarBurn2.toLocaleString('en-US', { maximumFractionDigits: 2 });
             document.getElementById('usdt-receive-2').textContent = usdtReceive2.toLocaleString('en-US', { maximumFractionDigits: 2 });
@@ -546,9 +546,9 @@
             } else {
                 // 社区用户显示其他不满足的条件
                 if (activeInterestCount < 10) { html1 += renderConditionItem('🔥', '直推生息人数', `${activeInterestCount}/10`); cond1Count++; }
-                if (communityCount < 300) { html1 += renderConditionItem('🏘️', '全网社区数量', `${communityCount}/300`); cond1Count++; }
+                if (communityCount < 100) { html1 += renderConditionItem('🏘️', '全网社区数量', `${communityCount}/100`); cond1Count++; }
                 if (totalSupply < BASE_SUPPLY) { html1 += renderConditionItem('💎', '流通量要求', `${formatNumber(totalSupply, 6)}/2100万`); cond1Count++; }
-                if (communityCount >= 500 && !isRanked) { html1 += renderConditionItem('📊', '需入榜前1000', '未入榜'); cond1Count++; }
+                if (communityCount >= 200 && !isRanked) { html1 += renderConditionItem('📊', '需入榜前100', '未入榜'); cond1Count++; }
                 const nextBnb = timestamps.bnb + REMAX_TIME;
                 if (now < nextBnb) { html1 += renderConditionItem('⏰', '距下次兑换', formatCountdown(nextBnb - now), true); cond1Count++; }
                 if (balances.vollar < calculated.vollarBurn1) { html1 += renderConditionItem('🪙', 'Vollar余额不足', formatNumber(balances.vollar, 6)); cond1Count++; }
@@ -571,7 +571,7 @@
                 // 社区用户显示其他不满足的条件
                 if (activeInterestCount < 10) { html2 += renderConditionItem('🔥', '直推生息人数', `${activeInterestCount}/10`); cond2Count++; }
                 if (totalSupply < BASE_BILLION) { html2 += renderConditionItem('💎', '流通量要求', `${formatNumber(totalSupply, 6)}/1亿`); cond2Count++; }
-                if (communityCount >= 1000 && !isRanked) { html2 += renderConditionItem('📊', '需入榜前1000', '未入榜'); cond2Count++; }
+                if (communityCount >= 500 && !isRanked) { html2 += renderConditionItem('📊', '需入榜前100', '未入榜'); cond2Count++; }
                 if (totalSupply < SUPPLY_333B && Number(globalStats.allUSDTWithdrawn) >= Number(rateStats.usdtAllocation)) { html2 += renderConditionItem('📦', 'USDT配额', '已用尽'); cond2Count++; }
                 const nextUsdt = timestamps.usdt + REMAX_TIME;
                 if (now < nextUsdt) { html2 += renderConditionItem('⏰', '距下次兑换', formatCountdown(nextUsdt - now), true); cond2Count++; }
@@ -587,7 +587,7 @@
             let html3 = '<div class="conditions-title">⚠️ 兑换条件</div>';
             let cond3Count = 0;
             if (totalSupply < SUPPLY_1000B) { html3 += renderConditionItem('💎', '流通量要求', `${formatNumber(totalSupply, 6)}/1000亿`); cond3Count++; }
-            if (!isRanked) { html3 += renderConditionItem('📊', '需入榜前1000', '未入榜'); cond3Count++; }
+            if (!isRanked) { html3 += renderConditionItem('📊', '需入榜前100', '未入榜'); cond3Count++; }
             const nextVid = timestamps.vid + REMAX_TIME;
             if (now < nextVid) { html3 += renderConditionItem('⏰', '距下次兑换', formatCountdown(nextVid - now), true); cond3Count++; }
             if (balances.vollar < 100000e6) { html3 += renderConditionItem('🪙', 'Vollar余额不足', formatNumber(balances.vollar, 6)); cond3Count++; }
