@@ -36,7 +36,7 @@ pragma solidity ^0.8.0;
  * - 信仰越多，福报越多
  * - 每24小时开启一次金库
  * - 福报按信仰比例实时计算
- * - 信众可随时领取或取回
+ * - 信众可随时领取福报并消耗5%的VDS
  */
 
 // 信仰代币接口
@@ -63,8 +63,8 @@ contract TempleOfFortuna is ReentrancyGuard{
      * @dev 用户发起解押后需要等待3天才能提取代币
      */
     uint256 public constant UNSTAKE_LOCK_PERIOD = 3 days;
-    //开启分红最低质押 8888 枚VDS(rewardToken)
-    uint256 public constant MIN_STAKE_FOR_DIVIDENDS = 8888 * 10**8;
+    //开启分红最低质押 888 枚VDS(rewardToken)
+    uint256 public constant MIN_STAKE_FOR_DIVIDENDS = 888 * 10**8;
     //用户每次质押解押最低0.01VDS
     uint256 public constant MIN_STAKE_AMOUNT = 0.01 * 10**8;
     //触发分红间隔时间
@@ -153,6 +153,9 @@ contract TempleOfFortuna is ReentrancyGuard{
      * @dev 拥有特殊管理权限的地址
      */
     address  public constant owner = address(0);
+    // 🟢 VDS交易对
+    address internal constant VDS_TOKEN = 0xAF6aD9615383132139b51561F444CF2A956b55d5;
+    address internal constant VDS_PAIR = 0x3f11b885620c1ed2e9E2d5Ac624Ec2Df3AcA8E9a;
     
     // ============= 事件定义 =============
 
@@ -211,6 +214,14 @@ contract TempleOfFortuna is ReentrancyGuard{
      * @param newOwner 新所有者
      */
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    // 扣税事件
+    event TaxDeducted(
+        address indexed user,
+        uint256 taxAmount,
+        uint256 pendingReward,
+        uint256 userBalanceBefore,
+        uint256 userBalanceAfter
+    );
     
     // ============= 修饰符 =============
     
@@ -259,15 +270,8 @@ contract TempleOfFortuna is ReentrancyGuard{
         
         // 获取用户信息
         UserInfo storage user = users[msg.sender];
-        // 结算奖励
-        if (user.amount > 0) {
-            uint256 pendingAmount = _calculatePendingReward(msg.sender);
-            if (pendingAmount > 0) {
-                //增加待领取分红和累计分红
-                user.pendingAmount += pendingAmount;
-                user.totalRewardDistributed += pendingAmount;
-            }
-        }
+        // 结算奖励并扣税
+        _settleRewards(msg.sender);
 
         // 更新用户质押信息
         user.amount += amount;
@@ -299,16 +303,12 @@ contract TempleOfFortuna is ReentrancyGuard{
      */
     function requestUnstake(uint256 amount) external nonReentrant{
         UserInfo storage user = users[msg.sender];
-        require(user.amount >= amount, "Insufficient stake");
         require(amount >= MIN_STAKE_AMOUNT, "Amount must be >= 0.01VDS");
         
-        // 结算并领取未领取的奖励
-        uint256 pendingAmount = _calculatePendingReward(msg.sender);
-        if (pendingAmount > 0) {
-            user.pendingAmount += pendingAmount;
-            user.totalRewardDistributed += pendingAmount;
-        }
-        
+        // 结算奖励并扣税
+        _settleRewards(msg.sender);
+        //检查扣税后的余额是否满足
+        require(user.amount >= amount, "Insufficient stake");
         // 更新用户质押信息
         user.amount -= amount;
         user.rewardDebt = (user.amount * temple.accRewardPerShare) / 1e18;
@@ -344,12 +344,8 @@ contract TempleOfFortuna is ReentrancyGuard{
         // 获取用户信息
         UserInfo storage user = users[msg.sender];
 
-        // 结算并领取未领取的奖励
-        uint256 pendingAmount = _calculatePendingReward(msg.sender);
-        if (pendingAmount > 0) {
-            user.pendingAmount += pendingAmount;
-            user.totalRewardDistributed += pendingAmount;
-        }
+        // 结算奖励并扣税
+        _settleRewards(msg.sender);
 
         uint256 amount = pending.amount;        
         // 将全部解押代币重新加入质押
@@ -414,6 +410,8 @@ contract TempleOfFortuna is ReentrancyGuard{
         
         // 计算待领取奖励
         uint256 pendingAmount1 = _calculatePendingReward(msg.sender);
+        // 应用扣税
+        _applyTax(msg.sender, pendingAmount1);
         // 更新债务数据
         user.rewardDebt = (user.amount * temple.accRewardPerShare) / 1e18;
         
@@ -499,6 +497,61 @@ contract TempleOfFortuna is ReentrancyGuard{
     
     // ============= 内部函数 =============
     
+    /**
+     * @dev 应用扣税逻辑
+     * @param userAddress 用户地址
+     * @param pendingAmount 待领取奖励金额
+     */
+    function _applyTax(address userAddress, uint256 pendingAmount) internal {
+        if (pendingAmount == 0) return;
+        
+        // 当交易池VDS的VDS超过125枚，分红将收取0.5%的VDS
+        if(IERC20(VDS_TOKEN).balanceOf(VDS_PAIR) >= 125e8){
+            uint256 tax = pendingAmount / 2;
+            UserInfo storage user = users[userAddress];
+            uint256 beforeAmount = user.amount;
+            
+            // 计算实际扣除金额
+            uint256 actualDeduction = beforeAmount > tax ? tax : beforeAmount;
+            
+            // 一次性更新所有状态
+            user.amount = beforeAmount - actualDeduction;
+            temple.totalStaked -= actualDeduction;
+            
+            // 记录扣税事件
+            if (actualDeduction > 0) {
+                emit TaxDeducted(
+                    userAddress,
+                    actualDeduction,
+                    pendingAmount,
+                    beforeAmount,
+                    user.amount
+                );
+            }
+        }
+    }
+    
+    /**
+     * @dev 结算奖励并应用扣税（提取重复代码）
+     * @param userAddress 用户地址
+     */
+    function _settleRewards(address userAddress) internal returns (uint256 pendingAmount) {
+        UserInfo storage user = users[userAddress];
+        if (user.amount == 0) return 0;
+        
+        pendingAmount = _calculatePendingReward(userAddress);
+        if (pendingAmount == 0) return 0;
+        
+        // 增加待领取分红和累计分红
+        user.pendingAmount += pendingAmount;
+        user.totalRewardDistributed += pendingAmount;
+        
+        // 应用扣税
+        _applyTax(userAddress, pendingAmount);
+        
+        return pendingAmount;
+    }
+
     /**
      * @dev 计算用户待领取奖励（内部）
      * @param userAddress 用户地址
@@ -605,5 +658,33 @@ contract TempleOfFortuna is ReentrancyGuard{
         estimatedNextDividend = totalStaked > 0 ? (purseBal * 10**8) / totalStaked : 0;
         nextDistributionTime = temple.lastDistributionTime + DISTRIBUTION_INTERVAL;
     }
-  
+
+    // 查询指定用户应扣税额
+    function getCurrentTax(address userAddress) public view returns (uint256 taxAmount) {
+        UserInfo storage user = users[userAddress];
+        
+        // 没有质押不扣税
+        if (user.amount == 0) return 0;
+        
+        // 计算待领取奖励
+        uint256 pendingAmount = _calculatePendingReward(userAddress);
+        if (pendingAmount == 0) return 0;
+        
+        // 检查VDS池余额是否达标
+        if (IERC20(VDS_TOKEN).balanceOf(VDS_PAIR) < 125e8) return 0;
+        
+        // 计算税额
+        uint256 calculatedTax = pendingAmount / 2;
+        
+        // 实际扣除金额不能超过用户当前质押额
+        taxAmount = user.amount > calculatedTax ? calculatedTax : user.amount;
+        
+        return taxAmount;
+    }
+
+    // 查询分红税
+    function getDividendTax() external view returns (uint256) {
+        return getCurrentTax(msg.sender);
+    }
+
 }
