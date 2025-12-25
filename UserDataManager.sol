@@ -35,33 +35,33 @@ contract UserDataManager {
 
     // 全网数据统计结构体
     struct GlobalStats {
-        uint256 startTimer;                // 合约启动时间
-        uint256 userCount;                 // 共振参与人数
 
         //全网Vollar铸造统计
-        uint256 allTotalAmount;            // 全网铸造总量
-        uint256 allVIDMintedVollar;        // VID铸造总量
-        uint256 allUSDTMintedVollar;       // USDT铸造总量
-        uint256 allCompoundInterest;       // 生息铸造总量
+        uint64 allTotalAmount;             // 全网铸造Vollar总量
+        uint64 allTotalVIDResonance;       // VID共振入合约总量
+        uint64 allVIDMintedVollar;         // VID铸造Vollar总量
+        uint64 allCompoundInterest;        // 生息铸造Vollar总量
 
-        //全网共振统计
-        uint256 allTotalVIDResonance;      // VID共振总量
-        uint256 allTotalUSDTResonance;     // USDT共振总量
-
-        //全网推广奖励VID统计
-        uint256 allVIDRewardAmount;        // 奖励VID总量
+        uint128 allTotalUSDTResonance;      // USDT共振入合约总量
+        uint128 allUSDTMintedVollar;        // USDT铸造Vollar总量
         
         //全网社区USDT兑换VID统计
-        uint256 totalUSDTReceived;         // USDT兑入总额
-        uint256 totalRedeemedVID;          // VID兑出总额
+        uint128 totalUSDTReceived;          // USDT兑入总额
+        uint128 totalRedeemedVID;           // VID兑出总额
 
         //全网Vollar兑换资产统计
+        uint256 allTotalAmountS;           // 社区销毁总量
         uint256 allBNBWithdrawn;           // 兑换BNB总量
+
         uint256 allUSDTWithdrawn;          // 兑换USDT总量
         uint256 allVIDWithdrawn;           // 兑换VID总量
 
         //全网兑换资产销毁Vollar统计
-        uint256 allTotalAmountS;           // 社区销毁总量
+        uint256 allVIDRewardAmount;         // 奖励VID总量
+
+        uint256 userCount;                 // 共振参与人数
+        uint256 startTimer;                // 合约启动时间
+        
         
     }
 
@@ -71,26 +71,32 @@ contract UserDataManager {
     // 用户信息结构体
     struct UserInfo {
         //获得Vollar统计
-        uint256 totalMintedVollar;            // 个人铸造总额
-        uint256 vollarFromVID;                // VID共振获得
-        uint256 vollarFromUSDT;               // USDT共振获得
-        uint256 personalHoldingInterest;      // 持币生息获得
-        uint256 communitySubsidyMint;         // 社区补贴获得
-        //共振统计
-        uint256 vidResonanceAmount;           // VID共振总额
-        uint256 usdtResonanceAmount;          // USDT共振总额
+        uint64 totalMintedVollar;            // 个人铸造总额
+        uint64 vidResonanceAmount;           // VID共振总额
+        uint64 vollarFromVID;                // VID共振获得
+        uint64 personalHoldingInterest;      // 持币生息获得
+
+        //兑换资产销毁Vollar统计
+        uint128 exchangedBurnedVollar;         // 兑换销毁总额
+        uint128 exchangedBNB;                  // 兑换BNB总额
+
         //推广奖励VID统计
-        uint256 vidRewardsFromRef;            // 个人奖励VID
-        uint256 vidRewardsFromCommunity;      // 社区奖励VID
+        uint128 vidRewardsFromRef;            // 个人奖励VID
+        uint128 vidRewardsFromCommunity;      // 社区奖励VID
+
         //USDT兑换VID统计(社区)
         uint256 usdtForVIDAmount;             // USDT兑换总额
         uint256 getTotalVID;                  // 兑换获得VID
-        //Vollar兑换统计(社区)
-        uint256 exchangedBNB;                 // 兑换BNB总额
-        uint256 exchangedUSDT;                // 兑换USDT总额
-        uint256 exchangedVID;                 // 兑换VID总额
-        //兑换资产销毁Vollar统计
-        uint256 exchangedBurnedVollar;        // 兑换销毁总额
+
+        uint256 vollarFromUSDT;               // USDT共振获得Vollar
+        uint256 usdtResonanceAmount;          // USDT共振总额Vollar
+        
+        uint256 exchangedUSDT;                 // 兑换USDT总额
+        uint256 exchangedVID;                  // 兑换VID总额
+
+        uint256 communitySubsidyMint;         // 社区补贴获得Vollar
+
+
 
     }
 
@@ -115,17 +121,17 @@ contract UserDataManager {
         UserInfo storage u = userInfo[user];
         
         // 更新用户数据
-        u.totalMintedVollar += actualMintAmount;        //获得Vollar总金额
-        u.vidResonanceAmount += vidAmount;              //共振VID金额
+        u.totalMintedVollar += uint64(actualMintAmount);        //获得Vollar总金额
+        u.vidResonanceAmount += uint64(vidAmount);              //共振VID金额
         if (communitySubsidy > 0){
-            u.communitySubsidyMint += communitySubsidy;//社区补贴
-            u.vollarFromVID += actualMintAmount - communitySubsidy; //基础铸造(扣除社区补贴)
-        } else {u.vollarFromVID += actualMintAmount; }
+            u.communitySubsidyMint += communitySubsidy;             //社区补贴
+            u.vollarFromVID += uint64(actualMintAmount - communitySubsidy); //基础铸造(扣除社区补贴)
+        } else {u.vollarFromVID += uint64(actualMintAmount); }
 
         // 更新系统数据
-        globalStats.allTotalAmount += actualMintAmount;
-        globalStats.allTotalVIDResonance += vidAmount;
-        globalStats.allVIDMintedVollar += actualMintAmount;
+        globalStats.allTotalAmount += uint64(actualMintAmount);
+        globalStats.allTotalVIDResonance += uint64(vidAmount);
+        globalStats.allVIDMintedVollar += uint64(actualMintAmount);
 
     }
 
@@ -145,7 +151,7 @@ contract UserDataManager {
         UserInfo storage u = userInfo[user];
         
         // 更新用户数据
-        u.totalMintedVollar += mintAmount;
+        u.totalMintedVollar += uint64(mintAmount);
         u.usdtResonanceAmount += usdtAmount;
         
         if (communitySubsidy > 0) {
@@ -154,9 +160,9 @@ contract UserDataManager {
         } else {u.vollarFromUSDT += mintAmount;}
         
         // 更新系统数据
-        globalStats.allTotalAmount += mintAmount;
-        globalStats.allTotalUSDTResonance += usdtAmount;
-        globalStats.allUSDTMintedVollar += mintAmount;
+        globalStats.allTotalAmount += uint64(mintAmount);
+        globalStats.allTotalUSDTResonance += uint128(usdtAmount);
+        globalStats.allUSDTMintedVollar += uint128(mintAmount);
         
     }
 
@@ -169,12 +175,12 @@ contract UserDataManager {
         UserInfo storage u = userInfo[user];
         
         // 更新用户数据
-        u.totalMintedVollar += interestAmount;
-        u.personalHoldingInterest += interestAmount;
+        u.totalMintedVollar += uint64(interestAmount);
+        u.personalHoldingInterest += uint64(interestAmount);
         
         // 更新系统数据
-        globalStats.allCompoundInterest += interestAmount;
-        globalStats.allTotalAmount += interestAmount;
+        globalStats.allCompoundInterest += uint64(interestAmount);
+        globalStats.allTotalAmount += uint64(interestAmount);
         
         // 更新时间
         interestTime[user] = block.timestamp;
@@ -185,9 +191,9 @@ contract UserDataManager {
         UserInfo storage u = userInfo[user];
         
         if (isCommunity) {
-            u.vidRewardsFromCommunity += amount;    //社区推荐VID奖励
+            u.vidRewardsFromCommunity += uint128(amount);    //社区推荐VID奖励
         } else {
-            u.vidRewardsFromRef += amount;          //普通推荐VID奖励
+            u.vidRewardsFromRef += uint128(amount);          //普通推荐VID奖励
         }
         // 更新系统数据
         globalStats.allVIDRewardAmount += amount;
@@ -207,8 +213,8 @@ contract UserDataManager {
         u.getTotalVID += vidAmount;
         
         // 更新系统数据
-        globalStats.totalUSDTReceived += usdtAmount;
-        globalStats.totalRedeemedVID += vidAmount;
+        globalStats.totalUSDTReceived += uint128(usdtAmount);
+        globalStats.totalRedeemedVID += uint128(vidAmount);
         
         // 更新时间
         uSwapVTime[user] = block.timestamp;
@@ -218,8 +224,8 @@ contract UserDataManager {
         UserInfo storage u = userInfo[user];
         
         // 更新用户数据
-        u.exchangedBurnedVollar += amount;
-        u.exchangedBNB += bnbAmount;
+        u.exchangedBurnedVollar += uint128(amount);
+        u.exchangedBNB += uint128(bnbAmount);
         
         // 更新系统数据
         globalStats.allTotalAmountS += amount;
@@ -235,7 +241,7 @@ contract UserDataManager {
         UserInfo storage u = userInfo[user];
 
         // 更新用户数据
-        u.exchangedBurnedVollar += amount;
+        u.exchangedBurnedVollar += uint128(amount);
         u.exchangedUSDT += usdtAmount;
 
         // 更新系统数据
@@ -251,7 +257,7 @@ contract UserDataManager {
         UserInfo storage u = userInfo[user];        
 
         // 更新用户数据
-        u.exchangedBurnedVollar += amount;
+        u.exchangedBurnedVollar += uint128(amount);
         u.exchangedVID += vidAmount;
 
         // 更新系统数据
