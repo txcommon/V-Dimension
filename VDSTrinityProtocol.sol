@@ -72,12 +72,12 @@ import "./ReentrancyGuard.sol";
 
 contract VDSTrinityProtocol is ReentrancyGuard{
     // ============ 🔱 三位一体核心地址 ============
-    address internal constant VID = 0x3673FFa138427794CcB6Af82C6D4156bdc33e1b7;               // 🟣 价值桥梁
+    address internal constant VID = 0x407E45963dDa27b1E3c0feB9a60a151D567e7135;               // 🟣 价值桥梁
     address internal constant USDT = 0x55d398326f99059fF775485246999027B3197955;              // 🔵 稳定入口
     address internal constant VDS = 0xAF6aD9615383132139b51561F444CF2A956b55d5;               // 🟢 股权代币
-    address internal constant LP_PAIR = 0xF73ab7DB5a76a2E1e9BEA188432B215C31fF1c17;           // 🔵🟣 USDT-VID交易对
-    address internal constant VDS_VID_PAIR = 0x0a58A01ECA4697D19FC0F43796D63dbbe4803bdD;      // 🟣🟢 VDS-VID交易对
-    address internal constant DIVIDEND_RESERVE = 0x54925aAdf2370c24D2548A3f71c166bdD7c56C34;  // 🏦 分红储备合约
+    address internal constant LP_PAIR = 0x50d037bD550413Ea972e65D1ec73aF1F5f3D591D;           // 🔵🟣 USDT-VID交易对
+    address internal constant VDS_VID_PAIR = 0x3f11b885620c1ed2e9E2d5Ac624Ec2Df3AcA8E9a;      // 🟣🟢 VDS-VID交易对
+    address internal constant DIVIDEND_RESERVE = 0x1B32E2bE64671Ad6303c54352470e155Ac4C785c;  // 🏦 分红储备合约
     address public constant DEAD = 0x000000000000000000000000000000000000dEaD;                // ⚰️ 黑洞地址
     address public referralContract;                                                          // 推荐合约地址
     // ============ 📍 路由合约地址 ============
