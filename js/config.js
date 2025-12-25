@@ -166,7 +166,6 @@ const ERC20_ABI = [
 ]
 // VDSTRINITY ABI（完整版）
 const VDSTRINITY_ABI = [
-[
 	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
