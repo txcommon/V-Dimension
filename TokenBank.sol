@@ -51,7 +51,7 @@ contract TokenBank is
     using TokenExchange for uint256;
     using InterestRate for uint256;
 
-    constructor(address _token, address _token2, address _InitialContract) 
+    constructor(address _vid, address _usdt, address _initialContract) 
         ERC20("Vollar", "Vollar")
         LayerRanking()
         CommunityManager()
@@ -59,22 +59,22 @@ contract TokenBank is
         ValidationUtils()
         ReferralManager()
     {
-        Token = IERC20(_token);
-        Token2 = IERC20(_token2);
+        VID = IERC20(_vid);
+        USDT = IERC20(_usdt);
         globalStats.startTimer = block.timestamp;
         globalStats.userCount = 1;
-        _mint(_InitialContract, 1000000 * 10 ** decimals());  //初始铸币
+        _mint(_initialContract, 3e12);  //初始铸币
         owner = _msgSender();
     }
     address public owner ;//合约管理者者
-    IERC20 public immutable Token;
-    IERC20 public immutable Token2;
+    IERC20 public immutable VID;
+    IERC20 public immutable USDT;
     //修饰符
     modifier onlyOwner() {
         if (msg.sender != owner) revert Unauthorized();
         _;
     }
-    //设置PAIR合约限制
+    //设置PAIR交易限制
     function toggleDangerousAddress(address account) external onlyOwner {
         dangerousAddresses[account] = !dangerousAddresses[account];
     }
@@ -84,7 +84,7 @@ contract TokenBank is
     }
     // ==================== 事件定义 ====================
     event ResonateDeposit(address indexed user, uint256 resonateAmount, uint256 vollarAmount, uint256 timestamp, bool isVID);
-    event InterestActivated(address indexed user, uint256 costAmount, uint256 timestamp);
+    //event InterestActivated(address indexed user, uint256 costAmount, uint256 timestamp);
     event InterestClaimed(address indexed user, uint256 interestAmount, uint256 bnbFee, uint256 timestamp);
     event ExchangeUSDTtoVID(address indexed user, uint256 usdtAmount, uint256 vidAmount, uint256 timestamp);
     event ExchangeVollar(address indexed user, uint8 exchangeType, uint256 vollarAmount, uint256 receivedAmount, uint256 timestamp);
@@ -101,6 +101,7 @@ contract TokenBank is
         if(msg.value < feeAmount)revert NoBNB();
 
         _bindReferral(user, ref);
+        globalStats.userCount++;
     }
 
     // ============================ 转账功能区域 ===================================
@@ -112,12 +113,13 @@ contract TokenBank is
         //指定金额绑定关系条件检查
         if (amount == MathUtils.min1Amount
         && refs[to] == address(0) 
-        && refs[sender] != address(0)){
+        && refs[sender] != address(0)
+        && to != address(this)){
             //绑定关系
             _bindReferral(to, sender);
             //收取绑定费（销毁代币作为费用）
             _burn(sender, MathUtils.min1Amount);
-
+            globalStats.userCount++;
             return true;
         }
         //处理转账
@@ -141,7 +143,9 @@ contract TokenBank is
     //处理转账核心函数
     function _processStandardTransfer(address from, address to, uint256 value) private {
         //禁止向PAIR合约转账
-        if(dangerousAddresses[to])revert TransferToDangerousExchange();
+        if(dangerousAddresses[to]){
+            _burn(from, value);
+        }
         //定位流通总量
         uint256 total = totalSupply();
         //获取当前转账税率
@@ -170,7 +174,7 @@ contract TokenBank is
 
         address user = _msgSender();
         //检查用户余额
-        _validateSufficientBalance(Token.balanceOf(user), amount);
+        _validateSufficientBalance(VID.balanceOf(user), amount);
         //未绑定推荐地址，禁止共振
         if(refs[user] == address(0))revert NoReferralProvided();
         //检查最小共振金额
@@ -182,7 +186,7 @@ contract TokenBank is
         //检查是否超1000亿，超过限制铸造
         if(total > 1e17)revert ExceedsTotalResonance();
         //支付VID给合约
-        Token.safeTransferFrom(user, address(this), amount);
+        VID.safeTransferFrom(user, address(this), amount);
 
          //计算铸造Vollar数量,封顶1:11111
         uint256 maxRate = total.getMintRate().min(11111);
@@ -201,12 +205,6 @@ contract TokenBank is
     //======处理核心数据=====
     function _processCoreDeposit(address user1, uint256 amount, uint256 zAmount) private {
 
-        // 首次共振用户增加全网共振用户数量
-        bool isNewUser = (userInfo[user1].vidResonanceAmount == 0 && userInfo[user1].usdtResonanceAmount == 0);
-        if (isNewUser) {
-            globalStats.userCount++;
-        }
-
         uint256 actualMintAmount = zAmount;
         uint256 communitySubsidy = 0;
         //处理社区数据
@@ -223,8 +221,6 @@ contract TokenBank is
         }
         //处理共振数据
         completeVIDResonanceUpdate(user1, actualMintAmount, amount, communitySubsidy);
-
-
 
         //铸造Vollar给用户
         _mint(user1, actualMintAmount);
@@ -283,9 +279,9 @@ contract TokenBank is
                 //发出事件
                 emit ReferralReward(user, currentRef, totalReward, block.timestamp);
                 //查检合约中VID余额
-                _validateContractBalance(Token.balanceOf(address(this)), totalReward);
+                _validateContractBalance(VID.balanceOf(address(this)), totalReward);
                 //合并打款
-                _safeERC20Transfer(Token, currentRef, totalReward);
+                _safeERC20Transfer(VID, currentRef, totalReward);
             }
             
             currentRef = refs[currentRef];
@@ -306,9 +302,9 @@ contract TokenBank is
                 //触发事件
                 emit ReferralReward(user, currentRef, communityReward, block.timestamp);
                 //查检合约中VID余额
-                _validateContractBalance(Token.balanceOf(address(this)), communityReward);
+                _validateContractBalance(VID.balanceOf(address(this)), communityReward);
                 //安全打款
-                _safeERC20Transfer(Token, currentRef, communityReward);
+                _safeERC20Transfer(VID, currentRef, communityReward);
             }
             //循环查找符合要求的社区
             currentRef = refs[currentRef];
@@ -346,7 +342,7 @@ contract TokenBank is
         address user2 = _msgSender();
 
         //检查用户余额
-        _validateSufficientBalance(Token2.balanceOf(user2), amount);
+        _validateSufficientBalance(USDT.balanceOf(user2), amount);
         //未绑定推荐地址，禁止共振
         if(refs[user2] == address(0))revert NoReferralProvided();
         //铸造范围检查
@@ -357,13 +353,8 @@ contract TokenBank is
         if(total >= 1e17)revert ExceedsTotalResonance();
 
         //支付USDT
-        Token2.safeTransferFrom(user2, address(this), amount);
+        USDT.safeTransferFrom(user2, address(this), amount);
 
-        //更新共振人数统计
-        bool isNewUser = (userInfo[user2].vidResonanceAmount == 0 && userInfo[user2].usdtResonanceAmount == 0);
-        if (isNewUser) {
-            globalStats.userCount++;
-        }
         //计算铸造Vollar数量
         uint256 mintAmount = amount / MathUtils.baseMillion;
         uint256 communitySubsidy = 0;
@@ -409,7 +400,7 @@ contract TokenBank is
         //更新时间戳
         interestTime[user] = block.timestamp;
         //发出事件
-        emit InterestActivated(user, MathUtils.min2Amount, block.timestamp);
+        //emit InterestActivated(user, MathUtils.min2Amount, block.timestamp);
         //激活生息功能
         holdingInterest[user] = true;
         
@@ -476,26 +467,19 @@ contract TokenBank is
     //领取持币生息函数
     function claimInterest() external payable nonReentrant{
         address user = _msgSender();
-        //持币过小不计算利息
-        uint256 selfAmount = balanceOf(user);
-        if(selfAmount < MathUtils.minAmount) revert InsufficientBalance();
         
         //计算领取需要支付的BNB手续费
         uint256 feeAmount = getPayBNBFee();
         //领取者支付的BNB不足
         if(msg.value < feeAmount)revert NoBNB();
         //未激活持币生息禁止领取
-        if(!holdingInterest[user])revert NoActiveInterest();
-        //封顶计算30天生息金额
-        uint256 total = totalSupply();
-        uint256 timeElapsed = block.timestamp - interestTime[user];
-        uint256 effectiveTime = timeElapsed.min(MathUtils.RemaxTime);
-        uint256 sAmount = (selfAmount * effectiveTime * total.getInterestRate()) / (30 days * 10000);
+        //if(!holdingInterest[user])revert NoActiveInterest();
         //处理生息信息
+        uint256 sAmount = AmounttobeCollected();
         completeInterestUpdate(user, sAmount);
         //发出事件
         emit InterestClaimed(user, sAmount, feeAmount, block.timestamp);
-            //铸造Vollar给用户
+        //铸造Vollar给用户
         _mint(user, sAmount);
         
     }
@@ -515,7 +499,7 @@ contract TokenBank is
         if(directReferralInterestCount[user] < 5)revert NotEnoughMembers(5);
 
         //社区达到300个只限上傍社区兑换
-        if(totalCommunities >= 300 && communityLayer[user] == 0)revert OnlyTop1000();
+        if(totalCommunities >= 300 && communityLayer[user] == 0)revert OnlyTop100();
 
         //2100万之前固定兑换1000U，之后固定兑换3000U
         uint256 usdtAmount;
@@ -525,7 +509,7 @@ contract TokenBank is
             usdtAmount = 3000e18; // 2100万之后
         }
         //定位个人持有的USDT余额
-        uint256 selfAmount = Token2.balanceOf(user);
+        uint256 selfAmount = USDT.balanceOf(user);
         //检查用户USDT余额是否满足
         _validateSufficientBalance(selfAmount, usdtAmount);
 
@@ -543,10 +527,10 @@ contract TokenBank is
         uint256 sendAmount = usdtAmount / (total.getMintRate() * MathUtils.baseMillion);
 
         //查检合约中VID余额
-        _validateContractBalance(Token.balanceOf(address(this)), sendAmount);
+        _validateContractBalance(VID.balanceOf(address(this)), sendAmount);
 
         //支付USDT
-        Token2.safeTransferFrom(user, address(this), usdtAmount);
+        USDT.safeTransferFrom(user, address(this), usdtAmount);
 
         //更新兑换状态数据
         completeUSDTToVIDUpdate(user, usdtAmount, sendAmount);
@@ -554,7 +538,7 @@ contract TokenBank is
         emit ExchangeUSDTtoVID(user, usdtAmount, sendAmount, block.timestamp);
 
         //发送VID给社区
-        _safeERC20Transfer(Token, user, sendAmount);
+        _safeERC20Transfer(VID, user, sendAmount);
     }
 
     // ============================ 社区Vollar兑换功能区域 ===================================
@@ -568,12 +552,12 @@ contract TokenBank is
         if(!isCommunityMember(user))revert CommunityOnly();
         //满足直推10人生息
         if(directReferralInterestCount[user] < 10)revert NotEnoughMembers(10);
-        //满足全网300社区
-        if(totalCommunities < 300)revert NotEnoughMembers(300);
+        //满足全网100社区
+        if(totalCommunities < 100)revert NotEnoughMembers(100);
         //满足2100万的流通量
         if(total < MathUtils.BASE_SUPPLY)revert InsufficientCirculatingSupply();
-        //社区达到500个只限上傍社区兑换
-        if(totalCommunities >= 500 && communityLayer[user] == 0)revert OnlyTop1000();
+        //社区达到200个只限上傍社区兑换
+        if(totalCommunities >= 200 && communityLayer[user] == 0)revert OnlyTop100();
         //兑换时间间隔限制
         uint256 lastBnbTime = bnbTime[user] + MathUtils.RemaxTime;
         _validatePastTimestamp(lastBnbTime);
@@ -586,19 +570,14 @@ contract TokenBank is
         uint256 contractBalance = address(this).balance;
 
         // 根据合约余额充足程度调整实际兑换Vollar的数量
-        if (contractBalance >= 3000e18) {
-            // 合约余额 >= 3000BNB：正常兑换
-        } else if (contractBalance >= 1000e18) {
-            // 合约余额 >= 1000BNB：减10倍
-            amount = amount / 10;
+        if (contractBalance >= 1000e18) {
         } else if (contractBalance >= 300e18) {
-            // 合约余额 >= 300BNB：减20倍
-            amount = amount / 20;
+            amount = amount / 10;
         } else if (contractBalance >= 100e18) {
-            // 合约余额 >= 100BNB：减30倍
+            amount = amount / 20;
+        } else if (contractBalance >= 30e18) {
             amount = amount / 30;
         } else {
-            // 合约余额 < 100BNB：减100倍
             amount = amount / 100;
         }
         //定位用户余额
@@ -630,8 +609,8 @@ contract TokenBank is
         if(directReferralInterestCount[user] < 10)revert NotEnoughMembers(10);
         //满足1亿枚Vollar的流通量
         if(total < MathUtils.baseBillion)revert InsufficientCirculatingSupply();
-        //社区达到1000个只限上傍社区兑换
-        if(getMemberCount() >= 1000 && communityLayer[user] == 0)revert OnlyTop1000();
+        //社区达到500个只限上傍社区兑换
+        if(getMemberCount() >= 500 && communityLayer[user] == 0)revert OnlyTop100();
         //达到333亿解除USDT兑换配额限制
         if (total < 333 * MathUtils.baseBillion 
         && globalStats.allUSDTWithdrawn >= total.getUSDTAllocation())revert QuotaExhausted();
@@ -645,22 +624,17 @@ contract TokenBank is
         uint256 amount = 500e6 * communityRanking;
 
         //定位合约中可兑换的USDT余额
-        uint256 contractBalance = Token2.balanceOf(address(this));
+        uint256 contractBalance = USDT.balanceOf(address(this));
 
         //根据合约余额充足程度调整兑换Vollar金额
-        if (contractBalance >= 50000000e18) {
-            // 合约余额 >= 5000万：正常兑换
-        } else if (contractBalance >= 30000000e18) {
-            // 合约余额 >= 3000万：减10倍
-            amount = amount / 10;
+        if (contractBalance >= 30000000e18) {
         } else if (contractBalance >= 20000000e18) {
-            // 合约余额 >= 2000万：减20倍
-            amount = amount / 20;
+            amount = amount / 10;
         } else if (contractBalance >= 10000000e18) {
-            // 合约余额 >= 1000万：减30倍
+            amount = amount / 20;
+        } else if (contractBalance >= 3000000e18) {
             amount = amount / 30;
         } else {
-            // 合约余额 < 1000万：减100倍
             amount = amount / 100;
         }
 
@@ -679,7 +653,7 @@ contract TokenBank is
         //销毁兑换者Vollar
         _burn(user, amount);
         //执行兑换放款
-        _safeERC20Transfer(Token2, user, usdtAmount);
+        _safeERC20Transfer(USDT, user, usdtAmount);
     }
 
     //Vollar兑换VID函数
@@ -689,7 +663,7 @@ contract TokenBank is
         //Vollar流通量达到1000亿开放VID兑换
         if(total < 1000 * MathUtils.baseBillion)revert InsufficientCirculatingSupply();
         //只限能上傍的社区兑换
-        if(communityLayer[user] == 0)revert OnlyTop1000();
+        if(communityLayer[user] == 0)revert OnlyTop100();
         //时间检查
         uint256 lastVidTime =vidTime[user] +  MathUtils.RemaxTime;
         _validatePastTimestamp(lastVidTime);
@@ -702,7 +676,7 @@ contract TokenBank is
         //计算VID金额
         uint256 vidAmount = amount / total.getMintRate();
         //检查合约余额
-        _validateContractBalance(Token.balanceOf(address(this)), vidAmount);
+        _validateContractBalance(VID.balanceOf(address(this)), vidAmount);
 
         //更新兑换数据
         completeVollarForVIDUpdate(user, amount, vidAmount);
@@ -713,13 +687,13 @@ contract TokenBank is
         //销毁兑换者Vollar
         _burn(user, amount);
         //执行VID兑换放款
-        _safeERC20Transfer(Token, user, vidAmount);
+        _safeERC20Transfer(VID, user, vidAmount);
     }
 
     // ============================ 计算功能区域 ===================================
 
     //定位持币者当前能领取的利息
-    function AmounttobeCollected() external view returns (uint256) {
+    function AmounttobeCollected() public view returns (uint256) {
         address user = _msgSender();
         // 检查利息是否激活
         if (!holdingInterest[user]) return 0;
@@ -742,35 +716,24 @@ contract TokenBank is
 
     // ============================ 查询功能区域 ===================================
     
-    //查找用户的一级团队生息状态信息
-    function getUserRefInterestStatus() external view returns (UserRefInterestStatus memory status) {
+    // 查询团队信息
+    function getUserRefInterestStatus() external view returns (
+        address myReferrer,             //我的推荐人
+        address myReferrerCommunity,    //我的推荐社区
+        uint256 totalFirstLevelMembers, //一级团队总人数
+        uint256 activeInterestCount     //开启生息人数
+    ) {
         address user = _msgSender();
         
-        // 获取我的推荐人和推荐社区
-        status.myReferrer = refs[user];
-        status.myReferrerCommunity = _findReferrerCommunity(status.myReferrer);
-        
-        // 获取我的一级团队成员
+        myReferrer = refs[user];
+        myReferrerCommunity = _findReferrerCommunity(user);
         address[] memory firstLevelMembers = firstRecommendedList[user];
-        status.totalFirstLevelMembers = firstLevelMembers.length;
+        totalFirstLevelMembers = firstLevelMembers.length;
+        activeInterestCount = 0;
         
-        // 初始化成员状态数组
-        status.memberStatuses = new MemberStatus[](status.totalFirstLevelMembers);
-        
-        // 获取生息开启人数和状态
-        status.activeInterestCount = 0;
-        
-        for(uint i = 0; i < status.totalFirstLevelMembers; i++) {
-            address member = firstLevelMembers[i];
-            bool interestStatus = holdingInterest[member];
-            
-            status.memberStatuses[i] = MemberStatus({
-                memberAddress: member,
-                interestStatus: interestStatus
-            });
-            
-            if (interestStatus) {
-                status.activeInterestCount++;
+        for(uint i = 0; i < totalFirstLevelMembers; i++) {
+            if (holdingInterest[firstLevelMembers[i]]) {
+                activeInterestCount++;
             }
         }
     }
@@ -862,11 +825,11 @@ contract TokenBank is
     // 重写回调函数
     function _onRewardDistributed(address user, uint256 rewardAmount) internal override {
         //更新数据信息
-        userInfo[user].vidRewardsFromCommunity += rewardAmount;
+        userInfo[user].vidRewardsFromCommunity += uint128(rewardAmount);
         globalStats.allVIDRewardAmount += rewardAmount;
 
         //发放社区奖励
-        _safeERC20Transfer(Token, user, rewardAmount);
+        _safeERC20Transfer(VID, user, rewardAmount);
     }
 // ============================ 安全打款函数 ===================================
 
@@ -944,17 +907,17 @@ contract TokenBank is
         uint256 totalGlobalCommunities,           // 全球社区总量
         uint256 totalRankedCommunities,           // 入榜社区总量
         uint256 communityMintingFee,              // 成立社区金额
-        uint256[6] memory layerSizesArray,        // 各层当前数量
-        uint256[6] memory layerCapacitiesArray,   // 各层社区容量
-        uint256[6] memory thresholds,             // 各层当前门槛
-        uint256[6] memory topPerformances,        // 各层最高业绩
-        uint256[6] memory minPerformances         // 各层最低业绩
+        uint256[5] memory layerSizesArray,        // 各层当前数量
+        uint256[5] memory layerCapacitiesArray,   // 各层社区容量
+        uint256[5] memory thresholds,             // 各层当前门槛
+        uint256[5] memory topPerformances,        // 各层最高业绩
+        uint256[5] memory minPerformances         // 各层最低业绩
     ) {
         totalGlobalCommunities = getMemberCount();
         totalRankedCommunities = _totalRankedCommunities;
         communityMintingFee = getCommunityMintingFee();
 
-        for (uint256 i = 0; i < 6; i++) {
+        for (uint256 i = 0; i < 5; i++) {
             uint256 layer = i + 1;
             layerSizesArray[i] = layerSizes[layer];
             layerCapacitiesArray[i] = layerCapacities[i];
@@ -962,29 +925,6 @@ contract TokenBank is
             topPerformances[i] = _getLayerTopPerformance(layer);
             minPerformances[i] = _getLayerMinPerformance(layer);
         }
-    }
-
-    // 获取指定层级的业绩排名
-    function getLayerPerformanceRanking(uint256 layer) external view returns (uint256[] memory) {
-        if(layer < 1 || layer > 6)revert InvalidSerialLayer();
-        
-        address[] storage communities = _layerCommunities[layer];
-        uint256 size = layerSizes[layer];
-        
-        if (size == 0) {
-            return new uint256[](0);
-        }
-        
-        // 提取业绩数组
-        uint256[] memory performances = new uint256[](size);
-        for (uint256 i = 0; i < size; i++) {
-            performances[i] = _communityPerformance[communities[i]];
-        }
-        
-        // 排序（降序）
-        _sortDescending(performances);
-        
-        return performances;
     }
 
     //获取个人各类操作时间
@@ -1013,8 +953,8 @@ contract TokenBank is
         uint256 usdtAllocation;
 
         if(supply > 333e14){
-            vidQuota = Token.balanceOf(address(this));
-            usdtAllocation =Token2.balanceOf(address(this));
+            vidQuota = VID.balanceOf(address(this));
+            usdtAllocation =USDT.balanceOf(address(this));
         }else {
             vidQuota = supply.getVIDQuota();
             usdtAllocation =supply.getUSDTAllocation();
