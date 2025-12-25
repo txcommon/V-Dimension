@@ -3,19 +3,18 @@ pragma solidity >=0.8.0;
 
 /**
  * @title 分层排名系统
- * @dev 六层结构，新社区只能加第六层，门槛只升不降
+ * @dev 五层结构，新社区只能加第五层，门槛只升不降
  */
 contract LayerRanking {
-    // 六层定义
-    uint256 internal constant LAYER_TOP10 = 1;
-    uint256 internal constant LAYER_TOP30 = 2;  
-    uint256 internal constant LAYER_TOP100 = 3;
-    uint256 internal constant LAYER_TOP300 = 4;
-    uint256 internal constant LAYER_TOP600 = 5;
-    uint256 internal constant LAYER_TOP1000 = 6;
+    // 五层定义
+    uint256 internal constant LAYER_TOP3 = 1;
+    uint256 internal constant LAYER_TOP10 = 2;  
+    uint256 internal constant LAYER_TOP30 = 3;
+    uint256 internal constant LAYER_TOP60 = 4;
+    uint256 internal constant LAYER_TOP100 = 5;
     
-    // 各层级容量配置 [10, 20, 70, 200, 300, 400]
-    uint256[6] internal layerCapacities = [10, 20, 70, 200, 300, 400];
+    // 各层级容量配置
+    uint256[5] internal layerCapacities = [3, 7, 20, 30, 40];
 
     // 🎯各层级已发放奖励人数计数器
     mapping(uint256 => uint256) internal layerRewardCounters;
@@ -25,18 +24,17 @@ contract LayerRanking {
     
     // 数据结构
     mapping(uint256 => address[]) internal _layerCommunities;
-    mapping(uint256 => uint256) internal layerSizes;
-    mapping(address => uint256) internal communityLayer;
-    mapping(address => uint256) internal _communityPerformance;
+    mapping(uint256 => uint256) internal layerSizes;            //各层入榜数量
+    mapping(address => uint256) internal communityLayer;        //社区等级
+    mapping(address => uint256) internal _communityPerformance; //社区业绩
     
-    // 六个层级的最低门槛
-    uint256[6] internal layerThresholds = [
-        5e11,  // 第1层门槛
-        2e11,  // 第2层门槛  
+    // 五个层级的最低门槛
+    uint256[5] internal layerThresholds = [
+        1e12,  // 第1层门槛
+        3e11,  // 第2层门槛  
         1e11,  // 第3层门槛
-        5e10,  // 第4层门槛
-        2e10,  // 第5层门槛
-        1e10   // 第6层门槛
+        3e10,  // 第4层门槛
+        1e10   // 第5层门槛
     ];
 
     // 分层奖励配置
@@ -61,12 +59,11 @@ contract LayerRanking {
     error InvalidCommunity();
     constructor() {
         // Top分层奖励金额
-        layerRewards[LAYER_TOP10]   = 50000e6;   // 前10名：  50000 VID
-        layerRewards[LAYER_TOP30]   = 20000e6;   // 前30名：  20000 VID  
-        layerRewards[LAYER_TOP100]  = 10000e6;   // 前100名： 10000 VID 
-        layerRewards[LAYER_TOP300]  = 5000e6;    // 前300名： 5000  VID 
-        layerRewards[LAYER_TOP600]  = 2000e6;    // 前600名： 2000  VID 
-        layerRewards[LAYER_TOP1000] = 1000e6;    // 前1000名：1000  VID
+        layerRewards[LAYER_TOP3]   = 100000e6;   // 前3名：  100000 VID  
+        layerRewards[LAYER_TOP10]  = 30000e6;    // 前10名： 30000  VID 
+        layerRewards[LAYER_TOP30]  = 10000e6;    // 前30名： 10000  VID 
+        layerRewards[LAYER_TOP60]  = 3000e6;     // 前60名： 3000   VID 
+        layerRewards[LAYER_TOP100] = 1000e6;     // 前100名：1000   VID
     }
     /**
      * @dev 更新社区业绩 - 核心入口
@@ -79,7 +76,7 @@ contract LayerRanking {
         
         if (currentLayer == 0) {
             // 新社区
-            _joinLayer6(community, newPerformance);
+            _joinLayer5(community, newPerformance);
         } else {
             // 老社区
             _tryPromoteOneLayer(community, currentLayer, newPerformance);
@@ -87,55 +84,55 @@ contract LayerRanking {
     }
     
     /**
-     * @dev 新社区加入第六层
+     * @dev 新社区加入第五层
      */
-    function _joinLayer6(address community, uint256 performance) private {
-        // 检查是否达到第六层门槛
-        if (performance < layerThresholds[5]) {
+    function _joinLayer5(address community, uint256 performance) private {
+        // 检查是否达到第五层门槛
+        if (performance < layerThresholds[4]) {
             return; // 不入榜
         }
         
-        uint256 layer6Size = layerSizes[6];
+        uint256 layer5Size = layerSizes[5];
         
-        if (layer6Size < layerCapacities[5]) {
-            // 第六层未满，直接加入
-            _layerCommunities[6].push(community);
-            layerSizes[6]++;
-            communityLayer[community] = 6;
+        if (layer5Size < layerCapacities[4]) {
+            // 第五层未满，直接加入
+            _layerCommunities[5].push(community);
+            layerSizes[5]++;
+            communityLayer[community] = 5;
             //更新入榜社区总量
             _updateTotalRankedCache();
 
-            emit CommunityRanked(community, 6, performance, block.timestamp);
+            emit CommunityRanked(community, 5, performance, block.timestamp);
 
-            // 发放第六层奖励（仅限层级未满情况）
-            if (!rewardedLayers[community][6]) {
-                _distributeLayerReward(community, LAYER_TOP1000);
+            // 发放第五层奖励（仅限层级未满情况）
+            if (!rewardedLayers[community][5]) {
+                _distributeLayerReward(community, LAYER_TOP100);
             }
 
             // 检查加入后是否满员
-            if (layerSizes[6] >= layerCapacities[5]) {
-                _updateThresholdIfNeeded(6);
+            if (layerSizes[5] >= layerCapacities[4]) {
+                _updateThresholdIfNeeded(5);
             }
 
         } else {
-            // 第六层已满，找到业绩最低的社区进行比较
-            address minCommunity = _findMinPerformanceCommunity(6);
+            // 第五层已满，找到业绩最低的社区进行比较
+            address minCommunity = _findMinPerformanceCommunity(5);
             uint256 minPerformance = _communityPerformance[minCommunity];
             
             if (performance >= minPerformance) {
                 // 直接替换
-                _replaceCommunityInArray(minCommunity, community, 6);
-                communityLayer[community] = 6;
+                _replaceCommunityInArray(minCommunity, community, 5);
+                communityLayer[community] = 5;
                 communityLayer[minCommunity] = 0;
 
-                emit CommunityRanked(community, 6, performance, block.timestamp);
+                emit CommunityRanked(community, 5, performance, block.timestamp);
                 
                 // 更新门槛（只升不降）
-                _updateThresholdIfNeeded(6);
+                _updateThresholdIfNeeded(5);
             }
         }
     }
-    
+
     /**
      * @dev 老社区尝试晋升一层
      */
@@ -241,7 +238,7 @@ contract LayerRanking {
     }
 
     /**
-     * @dev 找到层级中业绩最低的社区 - 修复版本
+     * @dev 找到层级中业绩最低的社区
      */
     function _findMinPerformanceCommunity(uint256 layer) private view returns (address) {
         if(layerSizes[layer] == 0) revert();
@@ -282,12 +279,12 @@ contract LayerRanking {
     }
     // 入榜社区数量更新函数
     function _updateTotalRankedCache() private {
-        if (_totalRankedCommunities >= 1000) {
+        if (_totalRankedCommunities >= 100) {
             return;
         }
         
         uint256 total = 0;
-        for (uint256 layer = 1; layer <= 6; layer++) {
+        for (uint256 layer = 1; layer <= 5; layer++) {
             total += layerSizes[layer];
         }
         if(total > _totalRankedCommunities){
@@ -325,13 +322,12 @@ contract LayerRanking {
     //社区共振VID额外奖励加成
     function _applyRankBonus(address _community) internal view returns (uint256) {
         uint256 layer = communityLayer[_community];
-        
-        if (layer == LAYER_TOP10) return 300;
-        if (layer == LAYER_TOP30) return 200;
-        if (layer == LAYER_TOP100) return 150;
-        if (layer == LAYER_TOP300) return 130;
-        if (layer == LAYER_TOP600) return 120;
-        if (layer == LAYER_TOP1000) return 110;
+
+        if (layer == LAYER_TOP3) return 300;
+        if (layer == LAYER_TOP10) return 200;
+        if (layer == LAYER_TOP30) return 150;
+        if (layer == LAYER_TOP60) return 120;
+        if (layer == LAYER_TOP100) return 110;
         //未上榜
         return 100;
     }
@@ -340,17 +336,14 @@ contract LayerRanking {
     function _getCommunityRanking(address _community) internal view returns (uint256) {
 
         uint256 layer = communityLayer[_community];
-        
-        if (layer == LAYER_TOP10) return 200;
-        if (layer == LAYER_TOP30) return 100;
-        if (layer == LAYER_TOP100) return 50;
-        if (layer == LAYER_TOP300) return 30;
-        if (layer == LAYER_TOP600) return 20;
-        if (layer == LAYER_TOP1000) return 10;
-        //上榜社区不足1000时，社区倍率
-        if (_totalRankedCommunities < 1000) return 1;
-        //上榜社区达到1000名后只限上傍社区有奖励
-        return 0;
+
+        if (layer == LAYER_TOP3) return 200;
+        if (layer == LAYER_TOP10) return 100;
+        if (layer == LAYER_TOP30) return 50;
+        if (layer == LAYER_TOP60) return 20;
+        if (layer == LAYER_TOP100) return 10;
+        //普通社区
+        return 1;
     }
 
     // ========================== 查询函数 ===========================
@@ -425,18 +418,6 @@ contract LayerRanking {
             }
         }
         return minPerformance;
-    }
-
-    // 降序排序辅助函数
-    function _sortDescending(uint256[] memory array) internal pure {
-        uint256 n = array.length;
-        for (uint256 i = 0; i < n - 1; i++) {
-            for (uint256 j = 0; j < n - i - 1; j++) {
-                if (array[j] < array[j + 1]) {
-                    (array[j], array[j + 1]) = (array[j + 1], array[j]);
-                }
-            }
-        }
     }
 
 }
