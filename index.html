@@ -505,6 +505,7 @@
             border-top: 1px solid rgba(168, 85, 247, 0.2);
             box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.3);
             z-index: 1000;
+			transition: transform 0.3s ease, opacity 0.3s ease;
         }
 
         .nav-item {
@@ -533,7 +534,7 @@
         }
 
         .nav-item:not(.active) .nav-icon {
-            color: rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.6);
         }
 
         .nav-label {
@@ -547,7 +548,7 @@
         }
 
         .nav-item:not(.active) .nav-label {
-            color: rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.6);
         }
 
         /* ✅ 修复：移动端键盘处理 */
@@ -1104,7 +1105,8 @@
         currentMintRate: 11111,
         interestActivated: false,
         vidBalance: 0,
-        usdtBalance: 0
+        usdtBalance: 0,
+		communityCount: 0,
     };
 
 	// ==================== 替换原有的格式化函数 ====================
@@ -1375,6 +1377,7 @@
 			userState.interestActivated = false;
 			userState.vidBalance = 0;
 			userState.usdtBalance = 0;
+			userState.communityCount = 0;
 			
 			balances = { bnb: '0.00', vid: '0.00', usdt: '0.00', vollar: '0.00' };
 			
@@ -1578,7 +1581,16 @@
                 console.error('合约对象创建失败');
                 return;
             }
-            
+			
+			try {
+			    const gr = await contract.methods.getGlobalRankingInfo().call();
+			    userState.communityCount = Number(gr.totalGlobalCommunities) || 0;
+			    devLog('全网社区数量', userState.communityCount);
+			} catch {
+			    devLog('获取社区数量失败');
+			    userState.communityCount = 0;
+			}
+			
             try {
                 const totalSupplyWei = await contract.methods.totalSupply().call();
                 userState.totalSupply = parseFloat(totalSupplyWei);
@@ -2049,21 +2061,22 @@
         }
         
         if (token === 'VID' && userState.isCommunity) {
-            const genesisExchangeTime = 1767232800;
-            const currentTime = Math.floor(Date.now() / 1000);
-            
-            if (currentTime < genesisExchangeTime) {
-                wrapper.classList.add('error');
-                btn.disabled = true;
-                
-                const remainingSeconds = genesisExchangeTime - currentTime;
-                const days = Math.floor(remainingSeconds / 86400);
-                const hours = Math.floor((remainingSeconds % 86400) / 3600);
-                
-                btn.textContent = `${days}天${hours}时后开启创世共振`;
-                return;
-            }
-        }
+			const genesisExchangeTime = 1767232800;
+			const currentTime = Math.floor(Date.now() / 1000);
+			if (currentTime < genesisExchangeTime) {
+				wrapper.classList.add('error');
+				btn.disabled = true;
+				const remaining = genesisExchangeTime - currentTime;
+				btn.textContent = `${Math.floor(remaining / 86400)}天${Math.floor((remaining % 86400) / 3600)}时后开启创世共振`;
+				return;
+			}
+			if (userState.communityCount < 10) {
+				wrapper.classList.add('error');
+				btn.disabled = true;
+				btn.textContent = `需全网≥10社区 (${userState.communityCount}/10)`;
+				return;
+			}
+		}
         
         if (amount > 0) {
             btn.disabled = false;
