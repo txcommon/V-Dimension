@@ -114,7 +114,7 @@
 		@keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 0.3; } }
 		.card-content { position: relative; z-index: 1; }
 		
-		/* ========== 字体优化：按方案C+执行 ========== */
+		/* ========== 字体优化 ========== */
 		.section-title { 
 			font-size: 18px; 
 			font-weight: 700; 
@@ -125,11 +125,11 @@
 			margin-bottom: 18px; 
 		}
 		
-		/* 徽章：11px → 13px (+2px) */
+		/* 徽章：优化为13px */
 		.section-badge { 
 			padding: 4px 12px; 
 			border-radius: 12px; 
-			font-size: 13px; /* 优化：11px → 13px */
+			font-size: 13px; 
 			font-weight: 600; 
 			background: linear-gradient(135deg, rgba(168, 85, 247, 0.3) 0%, rgba(217, 70, 239, 0.3) 100%); 
 			border: 1px solid rgba(168, 85, 247, 0.5); 
@@ -144,16 +144,16 @@
 		}
 		.stat-row:last-child { border-bottom: none; }
 		
-		/* 数据标签：14px → 15px (+1px) */
+		/* 数据标签：15px */
 		.stat-label { 
-			font-size: 15px; /* 优化：14px → 15px */
-			color: rgba(255, 255, 255, 0.8); /* 提高对比度：0.6 → 0.8 */
+			font-size: 15px; 
+			color: rgba(255, 255, 255, 0.8);
 			font-weight: 500; 
 		}
 		
-		/* 数据值：15px → 16px (+1px) */
+		/* 数据值：16px */
 		.stat-value { 
-			font-size: 16px; /* 优化：15px → 16px */
+			font-size: 16px; 
 			font-weight: 700; 
 			color: #fff; 
 		}
@@ -175,10 +175,10 @@
 			margin: 16px 0; 
 		}
 		
-		/* ========== 排名网格优化 ========== */
+		/* ========== 排名网格优化（2列布局） ========== */
 		.rank-grid { 
 			display: grid; 
-			grid-template-columns: repeat(3, 1fr); 
+			grid-template-columns: repeat(2, 1fr); 
 			gap: 12px; 
 			margin-bottom: 16px; 
 		}
@@ -190,39 +190,37 @@
 			text-align: center; 
 		}
 		
-		/* 排名标签：11px → 14px (+3px) */
+		/* 排名标签：14px */
 		.rank-box-label { 
-			font-size: 14px; /* 优化：11px → 14px */
-			color: rgba(255, 255, 255, 0.8); /* 提高对比度 */
+			font-size: 14px; 
+			color: rgba(255, 255, 255, 0.8); 
 			margin-bottom: 6px; 
-			font-weight: 600; /* 加粗提高可读性 */
+			font-weight: 600; 
 		}
 		
-		/* 排名值：20px → 21px (+1px) */
+		/* 排名值：21px */
 		.rank-box-value { 
-			font-size: 21px; /* 优化：20px → 21px */
+			font-size: 21px; 
 			font-weight: 800; 
 			background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%); 
 			-webkit-background-clip: text; 
 			-webkit-text-fill-color: transparent; 
 		}
 		
-		/* ========== 徽章优化 ========== */
+		/* ========== 徽章优化（5层新配色） ========== */
 		.layer-badge { 
 			display: inline-block; 
 			padding: 4px 14px; 
 			border-radius: 20px; 
 			font-size: 13px; 
 			font-weight: 700; 
-			background: linear-gradient(135deg, #a855f7 0%, #d946ef 100%); 
 			color: #fff; 
 		}
-		.badge-layer1 { background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #000; }
-		.badge-layer2 { background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%); color: #000; }
-		.badge-layer3 { background: linear-gradient(135deg, #cd7f32 0%, #e6a859 100%); color: #000; }
-		.badge-layer4 { background: linear-gradient(135deg, #a855f7 0%, #c084fc 100%); color: #fff; }
-		.badge-layer5 { background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); color: #fff; }
-		.badge-layer6 { background: linear-gradient(135deg, #10b981 0%, #34d399 100%); color: #fff; }
+		.badge-layer1 { background: linear-gradient(135deg, #FFD700 0%, #FFAA00 100%); color: #000; }
+		.badge-layer2 { background: linear-gradient(135deg, #C0C0C0 0%, #A0A0A0 100%); color: #000; }
+		.badge-layer3 { background: linear-gradient(135deg, #CD7F32 0%, #B56C1E 100%); color: #000; }
+		.badge-layer4 { background: linear-gradient(135deg, #A855F7 0%, #8B5CF6 100%); color: #fff; }
+		.badge-layer5 { background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%); color: #fff; }
 		
 		/* ========== 层卡片优化 ========== */
 		.layer-card { 
@@ -244,34 +242,51 @@
 			color: #fff; 
 		}
 		
-		/* 状态徽章：11px → 13px (+2px) */
+		/* 状态徽章：13px */
 		.layer-status-badge { 
 			display: flex; 
 			align-items: center; 
 			gap: 6px; 
-			font-size: 13px; /* 优化：11px → 13px */
+			font-size: 13px; 
 			font-weight: 600; 
 		}
 		.layer-status-text { 
 			color: rgba(255, 255, 255, 0.7); 
 		}
-		.layer-threshold { 
-			display: flex; 
-			justify-content: space-between; 
-			align-items: center; 
-			padding: 8px 0; 
-		}
-		.threshold-label { 
+		
+		/* 奖励信息 */
+		.layer-reward { 
+			padding: 8px 12px; 
+			background: rgba(251, 191, 36, 0.1); 
+			border-radius: 10px; 
+			border: 1px solid rgba(251, 191, 36, 0.2); 
+			margin: 8px 0; 
 			font-size: 13px; 
-			color: rgba(255, 255, 255, 0.7); 
-			font-weight: 500; 
+			color: rgba(251, 191, 36, 0.9); 
+			text-align: center; 
 		}
-		.threshold-value { 
-			font-size: 16px; 
-			font-weight: 700; 
-			background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%); 
-			-webkit-background-clip: text; 
-			-webkit-text-fill-color: transparent; 
+		
+		.layer-details { 
+			display: grid; 
+			grid-template-columns: repeat(2, 1fr); 
+			gap: 8px; 
+			margin-top: 12px; 
+		}
+		.detail-item { 
+			background: rgba(255, 255, 255, 0.02); 
+			border-radius: 10px; 
+			padding: 8px; 
+			text-align: center; 
+		}
+		.detail-label { 
+			font-size: 12px; 
+			color: rgba(255, 255, 255, 0.6); 
+			margin-bottom: 4px; 
+		}
+		.detail-value { 
+			font-size: 14px; 
+			font-weight: 600; 
+			color: #fff; 
 		}
 		
 		/* ========== Tab切换 ========== */
@@ -326,9 +341,9 @@
 			color: #fff; 
 			flex-shrink: 0; 
 		}
-		.rank-top1 { background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #000; }
-		.rank-top2 { background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%); color: #000; }
-		.rank-top3 { background: linear-gradient(135deg, #cd7f32 0%, #e6a859 100%); color: #000; }
+		.rank-top1 { background: linear-gradient(135deg, #FFD700 0%, #FFAA00 100%); color: #000; }
+		.rank-top2 { background: linear-gradient(135deg, #C0C0C0 0%, #A0A0A0 100%); color: #000; }
+		.rank-top3 { background: linear-gradient(135deg, #CD7F32 0%, #B56C1E 100%); color: #000; }
 		.rank-value { 
 			font-size: 15px; 
 			font-weight: 700; 
@@ -362,6 +377,31 @@
 			font-size: 14px; 
 		}
 		
+		/* ========== 状态提示卡片 ========== */
+		.status-card { 
+			margin-top: 16px; 
+			padding: 12px; 
+			border-radius: 12px; 
+			border: 1px solid; 
+			font-size: 13px; 
+			text-align: center; 
+		}
+		.status-info { 
+			background: rgba(59, 130, 246, 0.1); 
+			border-color: rgba(59, 130, 246, 0.2); 
+			color: rgba(59, 130, 246, 0.9); 
+		}
+		.status-warning { 
+			background: rgba(251, 191, 36, 0.1); 
+			border-color: rgba(251, 191, 36, 0.2); 
+			color: rgba(251, 191, 36, 0.9); 
+		}
+		.status-success { 
+			background: rgba(34, 197, 94, 0.1); 
+			border-color: rgba(34, 197, 94, 0.2); 
+			color: rgba(34, 197, 94, 0.9); 
+		}
+		
 		/* ========== 底部导航：保持完全原样 ========== */
 		.bottom-nav { 
 			position: fixed; 
@@ -370,43 +410,138 @@
 			right: 0; 
 			display: flex; 
 			justify-content: space-around; 
-			padding: 12px 0 20px; /* 保持原样 */
-			background: rgba(26, 11, 61, 0.8); /* 保持原样 */
+			padding: 12px 0 20px; 
+			background: rgba(26, 11, 61, 0.8); 
 			backdrop-filter: blur(20px); 
-			border-top: 1px solid rgba(168, 85, 247, 0.2); /* 保持原样 */
-			box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.3); /* 保持原样 */
+			border-top: 1px solid rgba(168, 85, 247, 0.2); 
+			box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.3); 
 			z-index: 1000; 
 		}
 		.nav-item { 
 			display: flex; 
 			flex-direction: column; 
 			align-items: center; 
-			gap: 4px; /* 保持原样 */
+			gap: 4px; 
 			cursor: pointer; 
-			padding: 8px 16px; /* 保持原样 */
+			padding: 8px 16px; 
 			border-radius: 12px; 
 			transition: all 0.3s; 
 		}
 		.nav-item.active { background: rgba(168, 85, 247, 0.15); }
 		.nav-icon { 
-			font-size: 24px; /* 保持原样：24px */
+			font-size: 24px; 
 			transition: all 0.3s; 
 		}
 		.nav-item.active .nav-icon { color: #a855f7; transform: scale(1.1); }
 		.nav-item:not(.active) .nav-icon { color: rgba(255, 255, 255, 0.4); }
 		.nav-label { 
-			font-size: 11px; /* 保持原样：11px */
+			font-size: 11px; 
 			font-weight: 600; 
 			transition: all 0.3s; 
 		}
 		.nav-item.active .nav-label { color: #a855f7; }
 		.nav-item:not(.active) .nav-label { color: rgba(255, 255, 255, 0.4); }
+		/* 奖励信息样式 */
+		.reward-info {
+		    display: flex;
+		    align-items: center;
+		    gap: 12px;
+		    padding: 12px;
+		    border-radius: 12px;
+		    margin: 8px 0;
+		}
+		
+		.reward-available {
+		    background: rgba(251, 191, 36, 0.15);
+		    border: 1px solid rgba(251, 191, 36, 0.3);
+		    animation: pulse-glow 2s ease-in-out infinite;
+		}
+		
+		.reward-full {
+		    background: rgba(100, 116, 139, 0.1);
+		    border: 1px solid rgba(100, 116, 139, 0.2);
+		    opacity: 0.8;
+		}
+		
+		.reward-icon {
+		    font-size: 24px;
+		    flex-shrink: 0;
+		}
+		
+		.reward-details {
+		    flex: 1;
+		}
+		
+		.reward-amount {
+		    font-size: 14px;
+		    font-weight: 700;
+		    color: #fff;
+		    margin-bottom: 2px;
+		}
+		
+		.reward-status {
+		    font-size: 12px;
+		    font-weight: 600;
+		}
+		
+		.reward-available .reward-status {
+		    color: rgba(251, 191, 36, 0.9);
+		}
+		
+		.reward-full .reward-status {
+		    color: rgba(148, 163, 184, 0.9);
+		}
+		
+		.reward-tip {
+		    font-size: 12px;
+			font-weight: 550; /* 加粗增强可读性 */
+		    color: rgba(255, 255, 255, 0.8);
+		    text-align: center;
+		    margin-top: 10px;
+		    padding-top: 15px;
+		    border-top: 2px solid rgba(255, 255, 255, 0.2);
+			line-height: 1.5; /* 增加行高，提高可读性 */
+		}
+		
+		@keyframes pulse-glow {
+		    0%, 100% { 
+		        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.3); 
+		    }
+		    50% { 
+		        box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.1); 
+		    }
+		}
+		/* 在CSS部分添加（大约在最后） */
+		.pagination {
+		    display: flex;
+		    justify-content: center;
+		    align-items: center;
+		    gap: 10px;
+		    margin: 15px 0 10px 0;
+		}
+		
+		.pagination span {
+		    color: rgba(255, 255, 255, 0.7);
+		    font-size: 13px;
+		    padding: 0 10px;
+		}
+		/* 添加到CSS文件末尾 */
+		.rank-value .num-decimal {
+		    font-size: 13px;
+		    font-weight: 400;
+		    background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%);
+		    -webkit-background-clip: text;
+		    -webkit-text-fill-color: transparent;
+		    opacity: 0.8;
+		}
 	</style>
 </head>
 <body>
-    <!-- ========== 以下是您原有的HTML结构，完全未改动 ========== -->
+    <!-- ========== 背景 ========== -->
     <div class="bg-gradient"></div>
     <div class="bg-stars"></div>
+    
+    <!-- ========== 顶部栏 ========== -->
     <div class="top-bar">
         <div class="nav-left">
             <button class="back-btn" onclick="goBack()">←</button>
@@ -417,7 +552,10 @@
             <span data-i18n="common.refresh">刷新</span>
         </button>
     </div>
+    
+    <!-- ========== 主要内容容器 ========== -->
     <div class="container">
+        <!-- 全网统计卡片 -->
         <div class="data-card">
             <div class="card-content">
                 <div class="section-title"><span>🌍</span><span data-i18n="data.globalStats">全网统计</span></div>
@@ -431,6 +569,8 @@
                 <div class="stat-row"><div class="stat-label" data-i18n="data.contractRuntime">合约运行时间</div><div class="stat-value" id="contractRuntime">0天 0时 0分 0秒</div></div>
             </div>
         </div>
+        
+        <!-- 我的数据卡片 -->
         <div class="data-card">
             <div class="card-content">
                 <div class="section-title"><span>📈</span><span data-i18n="data.myData">我的数据</span></div>
@@ -455,6 +595,8 @@
                 <div class="stat-row"><div class="stat-label" data-i18n="data.getTotalVID">获得 VID</div><div class="stat-value" id="getTotalVID">0</div></div>
             </div>
         </div>
+        
+        <!-- 我的团队卡片 -->
         <div class="data-card">
             <div class="card-content">
                 <div class="section-title"><span>👥</span><span data-i18n="data.myTeam">我的团队</span><span class="section-badge" id="teamBadge">0/0 生息</span></div>
@@ -466,40 +608,53 @@
                 <div class="stat-row"><div class="stat-label">└─ <span data-i18n="data.interestDisabled">未开启生息</span></div><div class="stat-value" id="inactiveInterest">0</div></div>
             </div>
         </div>
+        
+        <!-- 我的社区排名卡片 -->
         <div class="data-card" id="rankingCard">
             <div class="card-content">
                 <div class="section-title"><span>🏆</span><span data-i18n="data.myCommunityRank">我的社区排名</span><span class="section-badge" id="rankingBadge">加载中...</span></div>
+                
+                <!-- 状态A：未成为社区 -->
                 <div id="rankingStateA" style="display: none;">
                     <div style="text-align: center; padding: 20px 0;">
                         <div style="font-size: 14px; color: rgba(255, 255, 255, 0.6); margin-bottom: 16px;">💡 <span data-i18n="data.communityCondition">成为社区条件</span></div>
-                        <div style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px;" data-i18n="data.singleResonance">单次共振铸造获得</div>
+                        <div style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px;" data-i18n="data.singleResonance">使用VID单次共振铸造</div>
                         <div style="font-size: 24px; font-weight: 800; margin-bottom: 20px;"><span class="stat-orange" id="communityFee">0</span> Vollar</div>
-                        <div style="font-size: 13px; color: rgba(255, 255, 255, 0.5); line-height: 1.6;" data-i18n="data.communityTip">使用VID共振一次性铸造足够的Vollar即可成为社区</div>
+                        <div class="status-card status-info" data-i18n="data.communityTip">共振VID成为社区，晋级全球排名系统！</div>
                     </div>
                 </div>
+                
+                <!-- 状态B：社区但未入榜 -->
                 <div id="rankingStateB" style="display: none;">
                     <div class="stat-row"><div class="stat-label" data-i18n="data.currentPerformance">当前业绩</div><div class="stat-value stat-orange" id="myPerformanceB">0</div></div>
-                    <div class="stat-row"><div class="stat-label" data-i18n="data.rankThreshold">入榜门槛</div><div class="stat-value stat-purple" id="top1000Threshold">0</div></div>
+                    <div class="stat-row"><div class="stat-label" data-i18n="data.rankThreshold">入榜门槛</div><div class="stat-value stat-purple" id="top100Threshold">0</div></div>
                     <div class="stat-row"><div class="stat-label" data-i18n="data.gapToRank">距离入榜</div><div class="stat-value" id="gapToRanked">0</div></div>
-                    <div style="margin-top: 16px; padding: 12px; background: rgba(251, 191, 36, 0.1); border-radius: 12px; border: 1px solid rgba(251, 191, 36, 0.2);"><div style="font-size: 13px; color: rgba(251, 191, 36, 0.9); text-align: center;" data-i18n="data.rankTip">💡 继续共振提升业绩可入榜前1000名</div></div>
+                    <div class="status-card status-warning" data-i18n="data.rankTip">💡入榜前100名，享高倍加成和兑换倍率！</div>
                 </div>
+                
+                <!-- 状态C：已入榜 -->
                 <div id="rankingStateC" style="display: none;">
                     <div class="rank-grid">
                         <div class="rank-box"><div class="rank-box-label" data-i18n="data.globalRank">全球排名</div><div class="rank-box-value" id="globalRank">-</div></div>
                         <div class="rank-box"><div class="rank-box-label" data-i18n="data.layerRank">层内排名</div><div class="rank-box-value" id="layerRank">-</div></div>
-                        <div class="rank-box"><div class="rank-box-label" data-i18n="data.exchangeMultiplier">兑换倍率</div><div class="rank-box-value" id="exchangeRate">0x</div></div>
                     </div>
                     <div class="stat-row"><div class="stat-label" data-i18n="data.currentLayer">所在层级</div><div class="stat-value"><span class="layer-badge" id="layerBadge">-</span></div></div>
                     <div class="stat-row"><div class="stat-label" data-i18n="data.currentPerformance">当前业绩</div><div class="stat-value stat-orange" id="myPerformanceC">0</div></div>
+                    <div class="stat-row"><div class="stat-label" data-i18n="data.exchangeMultiplier">兑换倍率</div><div class="stat-value" id="exchangeRate">1x</div></div>
+                    <div class="status-card status-success">🎉恭喜上榜！晋升更高层解锁更多奖励！</div>
                 </div>
             </div>
         </div>
+        
+        <!-- 社区排名状态卡片 -->
         <div class="data-card">
             <div class="card-content">
-                <div class="section-title"><span>🎯</span><span data-i18n="data.communityRankStatus">社区排名状态</span><span class="section-badge" id="rankedCount">0/1000</span></div>
+                <div class="section-title"><span>🎯</span><span data-i18n="data.communityRankStatus">社区排名状态</span><span class="section-badge" id="rankedCount">0/100</span></div>
                 <div id="layersContainer"></div>
             </div>
         </div>
+        
+        <!-- 社区排行榜卡片 -->
         <div class="data-card">
             <div class="card-content">
                 <div class="section-title"><span>📊</span><span data-i18n="data.communityLeaderboard">社区排行榜</span></div>
@@ -514,42 +669,63 @@
             </div>
         </div>
     </div>
+    
+    <!-- ========== 底部导航 ========== -->
     <div class="bottom-nav">
         <div class="nav-item" onclick="switchPage('home')" data-page="home"><div class="nav-icon">🏠</div><div class="nav-label" data-i18n="nav.home">首页</div></div>
         <div class="nav-item active" onclick="switchPage('stats')" data-page="stats"><div class="nav-icon">📊</div><div class="nav-label" data-i18n="nav.data">数据</div></div>
         <div class="nav-item" onclick="switchPage('swap')" data-page="swap"><div class="nav-icon">💰</div><div class="nav-label" data-i18n="nav.exchange">兑换</div></div>
         <div class="nav-item" onclick="switchPage('temple')" data-page="temple"><div class="nav-icon">🏛️</div><div class="nav-label" data-i18n="nav.temple">圣殿</div></div>
     </div>
+    
     <script src="js/config.js"></script>
     <script src="js/web3-manager.js"></script>
     <script>
-        // ========== 以下是您原有的JavaScript代码，完全未改动 ==========
-        const PAGE_SIZE = 50;
-        const LAYER_NAMES = ['TOP 10', 'TOP 30', 'TOP 100', 'TOP 300', 'TOP 600', 'TOP 1000'];
-        const LAYER_CAPACITIES = [10, 20, 70, 200, 300, 400];
+        // ========== 常量配置 ==========
+        const TOTAL_RANKED_CAPACITY = 100; // 总入榜人数（5层合计）
+        
+        // 5层排名系统配置
+        const LAYER_NAMES = ['🥇 TOP 3', '🥈 TOP 10', '🥉 TOP 30', '📈 TOP 60', '📊 TOP 100'];
+        const LAYER_CAPACITIES = [3, 7, 20, 30, 40]; // 合约中的layerCapacities
+        const LAYER_REWARDS = {
+            1: '100,000 VID', // TOP 3
+            2: '30,000 VID',  // TOP 10
+            3: '10,000 VID',  // TOP 30
+            4: '3,000 VID',   // TOP 60
+            5: '1,000 VID'    // TOP 100
+        };
+        
+        // 兑换倍率映射（从合约_getCommunityRanking()函数）
+        const EXCHANGE_RATES = {
+            0: '1x',      // 未上榜
+            1: '200x',    // TOP 3
+            2: '100x',    // TOP 10
+            3: '50x',     // TOP 30
+            4: '20x',     // TOP 60
+            5: '10x'      // TOP 100
+        };
+        
         let currentPage = { performance: 0, minting: 0, referral: 0 };
         let leaderboardLoaded = { performance: false, minting: false, referral: false };
         let totalCommunities = 0;
         let runtimeInterval = null;
         let contract = null;
 
+        // ========== 工具函数 ==========
         function formatNumberFull(num, decimals = 6) {
             if (decimals === 0) return Math.floor(num).toLocaleString();
             const actual = Number(num) / Math.pow(10, decimals);
             
-            // ✅ 修改这里：使用 toFixed 但去除尾部的 0
             const rounded = actual.toFixed(decimals);
             const parts = rounded.split('.');
             
-            // 去除小数部分末尾的 0
             let decimalPart = parts[1];
             if (decimalPart) {
-                decimalPart = decimalPart.replace(/0+$/, ''); // 去除尾部的 0
+                decimalPart = decimalPart.replace(/0+$/, '');
             }
             
             parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             
-            // 如果小数部分完全被去除，只显示整数
             if (!decimalPart) {
                 return '<span class="num-integer">' + parts[0] + '</span>';
             }
@@ -589,96 +765,387 @@
             runtimeInterval = setInterval(update, 1000);
         }
 
+        // ========== 排名状态显示 ==========
         function displayRankingState(ranking, globalRanking) {
-            const stateA = document.getElementById('rankingStateA'), stateB = document.getElementById('rankingStateB'), stateC = document.getElementById('rankingStateC'), badge = document.getElementById('rankingBadge');
-            stateA.style.display = 'none'; stateB.style.display = 'none'; stateC.style.display = 'none';
+            const stateA = document.getElementById('rankingStateA');
+            const stateB = document.getElementById('rankingStateB');
+            const stateC = document.getElementById('rankingStateC');
+            const badge = document.getElementById('rankingBadge');
+            
+            stateA.style.display = 'none';
+            stateB.style.display = 'none';
+            stateC.style.display = 'none';
+            
             if (!ranking.isCommunity) {
-                stateA.style.display = 'block'; badge.textContent = '未成为社区';
+                // 状态A：未成为社区
+                stateA.style.display = 'block';
+                badge.textContent = '未成为社区';
                 document.getElementById('communityFee').innerHTML = formatNumberFull(globalRanking.communityMintingFee, 6);
             } else if (!ranking.isRanked) {
-                stateB.style.display = 'block'; badge.textContent = '暂未入榜';
-                const myPerf = Number(ranking.performance), threshold = Number(globalRanking.thresholds?.[5] || 0), gap = threshold > myPerf ? threshold - myPerf : 0;
+                // 状态B：社区但未入榜
+                stateB.style.display = 'block';
+                badge.textContent = '暂未入榜';
+                
+                const myPerf = Number(ranking.performance);
+                // 第5层门槛就是入榜门槛
+                const threshold = Number(globalRanking.thresholds?.[4] || 0);
+                const gap = threshold > myPerf ? threshold - myPerf : 0;
+                
                 document.getElementById('myPerformanceB').innerHTML = formatNumber(myPerf, 6);
-                document.getElementById('top1000Threshold').innerHTML = formatNumber(threshold, 6);
+                document.getElementById('top100Threshold').innerHTML = formatNumber(threshold, 6);
                 document.getElementById('gapToRanked').innerHTML = formatNumber(gap, 6);
             } else {
-                stateC.style.display = 'block'; badge.textContent = '恭喜已入榜';
+                // 状态C：已入榜
+                stateC.style.display = 'block';
+                badge.textContent = '恭喜已入榜';
+                
                 document.getElementById('globalRank').textContent = '#' + ranking.globalRank;
                 document.getElementById('layerRank').textContent = ranking.rankInLayer + '/' + ranking.layerTotal;
-                document.getElementById('exchangeRate').textContent = ranking.exchangeRate + 'x';
                 document.getElementById('myPerformanceC').innerHTML = formatNumber(ranking.performance, 6);
-                const layerNames = ['', 'Top 10', 'Top 30', 'Top 100', 'Top 300', 'Top 600', 'Top 1000'];
+                
+                // 兑换倍率
+                document.getElementById('exchangeRate').textContent = EXCHANGE_RATES[ranking.layer] || '1x';
+                
+                // 层级徽章
                 const lb = document.getElementById('layerBadge');
-                lb.textContent = layerNames[ranking.layer] || '-';
-                lb.className = 'layer-badge badge-layer' + ranking.layer;
-            }
-        }
-
-        function loadLayersInfo(globalRanking) {
-            const container = document.getElementById('layersContainer');
-            container.innerHTML = '';
-            const layerSizes = globalRanking.layerSizesArray || [], thresholds = globalRanking.thresholds || [];
-            for (let i = 0; i < 6; i++) {
-                const layerSize = Number(layerSizes[i] || 0), capacity = LAYER_CAPACITIES[i], threshold = thresholds[i] || 0;
-                const isFull = layerSize >= capacity, statusText = isFull ? '已满员' : '未满员';
-                const card = document.createElement('div');
-                card.className = 'layer-card';
-                card.innerHTML = '<div class="layer-header"><div class="layer-name">' + LAYER_NAMES[i] + '</div><div class="layer-status-badge"><span class="layer-status-text">' + statusText + '</span><span class="layer-badge badge-layer' + (i+1) + '">' + layerSize + '/' + capacity + '</span></div></div><div class="layer-threshold"><span class="threshold-label">晋级门槛</span><span class="threshold-value">' + formatNumberFull(threshold, 6) + ' Vollar</span></div>';
-                container.appendChild(card);
-            }
-        }
-
-        function createRankItem(rank, value, type) {
-            const item = document.createElement('div');
-            item.className = 'rank-item';
-            let rankClass = 'rank-number';
-            if (rank === 1) rankClass += ' rank-top1';
-            else if (rank === 2) rankClass += ' rank-top2';
-            else if (rank === 3) rankClass += ' rank-top3';
-            const suffix = type === 'referral' ? ' VID' : ' V';
-            item.innerHTML = '<div class="' + rankClass + '">' + rank + '</div><div class="rank-value">' + formatNumber(value, 6) + suffix + '</div>';
-            return item;
-        }
-
-        async function loadLeaderboard(type) {
-            const listId = type + 'List';
-            const container = document.getElementById(listId);
-            try {
-                if (totalCommunities === 0) { totalCommunities = Number(await contract.methods.getMemberCount().call()); }
-                if (totalCommunities === 0) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">暂无数据</div></div>'; return; }
-                const dataType = type === 'performance' ? 1 : type === 'minting' ? 2 : 3;
-                const start = currentPage[type] * PAGE_SIZE;
-                const end = Math.min(start + PAGE_SIZE, totalCommunities);
-                if (start >= totalCommunities) return;
-                const amounts = await contract.methods.getCommunityData(dataType, start, end).call();
-                let dataArray = amounts.map((val, idx) => ({ index: start + idx, value: Number(val) }));
-                dataArray.sort((a, b) => b.value - a.value);
-                if (currentPage[type] === 0) { container.innerHTML = ''; } else { const oldBtn = container.querySelector('.load-more-btn'); if (oldBtn) oldBtn.remove(); }
-                dataArray.forEach((item, idx) => { const rank = start + idx + 1; container.appendChild(createRankItem(rank, item.value, type)); });
-                if (end < totalCommunities) {
-                    const btn = document.createElement('button');
-                    btn.className = 'load-more-btn';
-                    btn.textContent = '加载更多 (' + (totalCommunities - end) + ' 条)';
-                    btn.onclick = () => { currentPage[type]++; loadLeaderboard(type); };
-                    container.appendChild(btn);
+                if (ranking.layer >= 1 && ranking.layer <= 5) {
+                    lb.textContent = LAYER_NAMES[ranking.layer - 1];
+                    lb.className = 'layer-badge badge-layer' + ranking.layer;
+                } else {
+                    lb.textContent = '未上榜';
+                    lb.className = 'layer-badge';
                 }
-                leaderboardLoaded[type] = true;
-            } catch (error) {
-                console.error('加载排行榜失败:', error);
-                container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">加载失败</div></div>';
             }
         }
 
+        // ========== 加载层级信息 ==========
+		function loadLayersInfo(globalRanking) {
+			const container = document.getElementById('layersContainer');
+			container.innerHTML = '';
+			
+			const layerSizes = globalRanking.layerSizesArray || [];
+			const thresholds = globalRanking.thresholds || [];
+			
+			for (let i = 0; i < 5; i++) {
+				const layerIndex = i + 1;
+				const layerSize = Number(layerSizes[i] || 0);
+				const capacity = LAYER_CAPACITIES[i];
+				const threshold = thresholds[i] || 0;
+				const isFull = layerSize >= capacity;
+				const reward = LAYER_REWARDS[layerIndex];
+				const remainingSlots = capacity - layerSize;
+				
+				// 门槛只显示整数
+				const formattedThreshold = Math.floor(Number(threshold) / 1000000).toLocaleString();
+				
+				const card = document.createElement('div');
+				card.className = 'layer-card';
+				
+				card.innerHTML = `
+					<div class="layer-header">
+						<div class="layer-name">${LAYER_NAMES[i]}</div>
+						<div class="layer-status-badge">
+							<span class="layer-status-text">${isFull ? '已满员' : '未满员'}</span>
+							<span class="layer-badge badge-layer${layerIndex}">${layerSize}/${capacity}</span>
+						</div>
+					</div>
+					
+					<div class="reward-info ${isFull ? 'reward-full' : 'reward-available'}">
+						<div class="reward-icon">${isFull ? '⛔' : '🎁'}</div>
+						<div class="reward-details">
+							<div class="reward-amount">${reward}</div>
+							<div class="reward-status">${isFull ? '奖励名额已满' : `${remainingSlots}个奖励名额`}</div>
+						</div>
+					</div>
+					
+					<div class="layer-details">
+						<div class="detail-item">
+							<div class="detail-label">晋级门槛</div>
+							<div class="detail-value">${formattedThreshold}</div>
+						</div>
+						<div class="detail-item">
+							<div class="detail-label">兑换倍率</div>
+							<div class="detail-value">${EXCHANGE_RATES[layerIndex]}</div>
+						</div>
+					</div>
+					
+					<!-- 🔴 修改这里的文字内容和样式 -->
+					${isFull ? 
+						'<div class="reward-tip">⚠️ 本层名额已满，晋升本层不再获得晋级奖</div>' :
+						'<div class="reward-tip">💡 本层还有名额，晋升本层将获得晋级奖励</div>'
+					}
+				`;
+				
+				container.appendChild(card);
+			}
+		}
+
+        // ========== 创建排名项目 ==========
+		function createRankItem(rank, value, type) {
+			const item = document.createElement('div');
+			item.className = 'rank-item';
+			
+			let rankClass = 'rank-number';
+			if (rank === 1) rankClass += ' rank-top1';
+			else if (rank === 2) rankClass += ' rank-top2';
+			else if (rank === 3) rankClass += ' rank-top3';
+			
+			const suffix = type === 'referral' ? ' VID' : ' Vollar';
+			
+			// ✅ 完全不四舍五入，直接截断
+			const actual = Number(value) / Math.pow(10, 6);
+			
+			// 直接截断到2位小数（不四舍五入）
+			const truncatedValue = Math.floor(actual * 100) / 100;
+			
+			const integerPart = Math.floor(truncatedValue);
+			const decimalPart = Math.floor((truncatedValue - integerPart) * 100);
+			
+			const formattedInteger = integerPart.toLocaleString();
+			
+			let decimalHtml = '';
+			if (decimalPart > 0) {
+				const decimalStr = decimalPart.toString().padStart(2, '0');
+				const trimmed = decimalStr.replace(/0+$/, '');
+				decimalHtml = `<span class="num-decimal">.${trimmed}</span>`;
+			}
+			
+			item.innerHTML = `
+				<div class="${rankClass}">${rank}</div>
+				<div class="rank-value">
+					<span class="num-integer">${formattedInteger}</span>
+					${decimalHtml}${suffix}
+				</div>
+			`;
+			
+			return item;
+		}
+        // ========== 加载排行榜 ==========
+
+		async function loadLeaderboard(type) {
+			const listId = type + 'List';
+			const container = document.getElementById(listId);
+			
+			try {
+				// 显示加载状态
+				container.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-text">正在加载排行榜数据...</div></div>';
+				
+				// 1. 获取社区总数
+				if (totalCommunities === 0) {
+					totalCommunities = Number(await contract.methods.getMemberCount().call());
+				}
+				
+				if (totalCommunities === 0) {
+					container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">暂无数据</div></div>';
+					return;
+				}
+				
+				// 2. 根据数据类型获取参数
+				const dataType = type === 'performance' ? 1 : type === 'minting' ? 2 : 3;
+				
+				// 3. 分批获取所有数据
+				let allData = [];
+				const BATCH_SIZE = 100; // 每次取100条
+				
+				for (let start = 0; start < totalCommunities; start += BATCH_SIZE) {
+					const end = Math.min(start + BATCH_SIZE, totalCommunities);
+					
+					// 更新加载进度
+					const progress = Math.min(Math.floor((end / totalCommunities) * 100), 100);
+					container.innerHTML = `<div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-text">正在加载数据... ${progress}%</div></div>`;
+					
+					// 调用合约获取这一批数据
+					const batchAmounts = await contract.methods.getCommunityData(dataType, start, end).call();
+					
+					// 将这批数据添加到总数组
+					batchAmounts.forEach((val, idx) => {
+						allData.push({
+							originalIndex: start + idx,
+							value: Number(val)
+						});
+					});
+				}
+				
+				// 4. 全局排序（从高到低）
+				allData.sort((a, b) => b.value - a.value);
+				
+				// 5. 缓存数据（用于后续查看完整排行榜）
+				if (!window.leaderboardCache) window.leaderboardCache = {};
+				window.leaderboardCache[type] = allData;
+				
+				// 6. 清空容器并显示真正的前50名
+				container.innerHTML = '';
+				
+				// 计算实际要显示的数量（最多50条）
+				const displayCount = Math.min(allData.length, 50);
+				
+				// 7. 显示真正的全球排行榜
+				for (let i = 0; i < displayCount; i++) {
+					const item = allData[i];
+					const rank = i + 1; // 这才是真正的全球排名！
+					container.appendChild(createRankItem(rank, item.value, type));
+				}
+				
+				// 8. 如果还有更多数据，显示"查看完整排行榜"按钮
+				if (allData.length > displayCount) {
+					const btn = document.createElement('button');
+					btn.className = 'load-more-btn';
+					btn.textContent = `查看完整排行榜 (共${allData.length}条)`;
+					btn.onclick = () => {
+						showFullLeaderboard(type, allData);
+					};
+					container.appendChild(btn);
+				}
+				
+				leaderboardLoaded[type] = true;
+				
+			} catch (error) {
+				console.error('加载排行榜失败:', error);
+				container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">加载失败，请重试</div></div>';
+			}
+		}
+
+		// ========== 查看完整排行榜函数 ==========
+		function showFullLeaderboard(type, allData) {
+			const listId = type + 'List';
+			const container = document.getElementById(listId);
+			
+			// 清空容器
+			container.innerHTML = '';
+			
+			// 显示所有数据（分页显示）
+			const PAGE_SIZE = 50;
+			let currentPage = 0;
+			
+			function renderPage(pageNum) {
+				const start = pageNum * PAGE_SIZE;
+				const end = Math.min(start + PAGE_SIZE, allData.length);
+				
+				// 清空当前内容
+				container.innerHTML = '';
+				
+				// 渲染这一页的数据
+				for (let i = start; i < end; i++) {
+					const item = allData[i];
+					const rank = i + 1; // 全局排名
+					container.appendChild(createRankItem(rank, item.value, type));
+				}
+				
+				// 添加分页控件
+				if (allData.length > PAGE_SIZE) {
+					const pagination = document.createElement('div');
+					pagination.className = 'pagination';
+					pagination.style.display = 'flex';
+					pagination.style.justifyContent = 'center';
+					pagination.style.alignItems = 'center';
+					pagination.style.gap = '10px';
+					pagination.style.marginTop = '15px';
+					pagination.style.marginBottom = '10px';
+					
+					// 上一页按钮
+					if (pageNum > 0) {
+						const prevBtn = document.createElement('button');
+						prevBtn.className = 'load-more-btn';
+						prevBtn.style.padding = '8px 16px';
+						prevBtn.style.fontSize = '13px';
+						prevBtn.textContent = '← 上一页';
+						prevBtn.onclick = () => renderPage(pageNum - 1);
+						pagination.appendChild(prevBtn);
+					}
+					
+					// 页码显示
+					const pageInfo = document.createElement('span');
+					pageInfo.style.color = 'rgba(255,255,255,0.7)';
+					pageInfo.style.fontSize = '13px';
+					pageInfo.style.padding = '0 10px';
+					pageInfo.textContent = `${pageNum + 1}/${Math.ceil(allData.length / PAGE_SIZE)}`;
+					pagination.appendChild(pageInfo);
+					
+					// 下一页按钮
+					if (end < allData.length) {
+						const nextBtn = document.createElement('button');
+						nextBtn.className = 'load-more-btn';
+						nextBtn.style.padding = '8px 16px';
+						nextBtn.style.fontSize = '13px';
+						nextBtn.textContent = '下一页 →';
+						nextBtn.onclick = () => renderPage(pageNum + 1);
+						pagination.appendChild(nextBtn);
+					}
+					
+					container.appendChild(pagination);
+				}
+				
+				// 添加返回顶部按钮
+				const backBtn = document.createElement('button');
+				backBtn.className = 'load-more-btn';
+				backBtn.textContent = '🔝 返回前50名';
+				backBtn.style.marginTop = '5px';
+				backBtn.onclick = () => {
+					// 使用缓存数据重新加载前50名
+					if (window.leaderboardCache && window.leaderboardCache[type]) {
+						const container = document.getElementById(listId);
+						container.innerHTML = '';
+						
+						const displayCount = Math.min(window.leaderboardCache[type].length, 50);
+						for (let i = 0; i < displayCount; i++) {
+							const item = window.leaderboardCache[type][i];
+							const rank = i + 1;
+							container.appendChild(createRankItem(rank, item.value, type));
+						}
+						
+						// 重新添加"查看完整排行榜"按钮
+						if (window.leaderboardCache[type].length > 50) {
+							const btn = document.createElement('button');
+							btn.className = 'load-more-btn';
+							btn.textContent = `查看完整排行榜 (共${window.leaderboardCache[type].length}条)`;
+							btn.onclick = () => {
+								showFullLeaderboard(type, window.leaderboardCache[type]);
+							};
+							container.appendChild(btn);
+						}
+					} else {
+						// 如果没有缓存，重新加载
+						loadLeaderboard(type);
+					}
+				};
+				container.appendChild(backBtn);
+			}
+			
+			// 渲染第一页
+			renderPage(currentPage);
+		}
+
+        // ========== 加载数据 ==========
         async function loadData() {
             try {
-                if (typeof web3Manager === 'undefined') { console.log('等待web3Manager加载...'); setTimeout(loadData, 500); return; }
-                if (!web3Manager.web3) { await web3Manager.init(); }
-                if (window.ethereum && window.ethereum.selectedAddress) { web3Manager.account = window.ethereum.selectedAddress; web3Manager.isConnected = true; }
+                if (typeof web3Manager === 'undefined') {
+                    console.log('等待web3Manager加载...');
+                    setTimeout(loadData, 500);
+                    return;
+                }
+                
+                if (!web3Manager.web3) {
+                    await web3Manager.init();
+                }
+                
+                if (window.ethereum && window.ethereum.selectedAddress) {
+                    web3Manager.account = window.ethereum.selectedAddress;
+                    web3Manager.isConnected = true;
+                }
+                
                 contract = web3Manager.getContract(TOKENBANK_ABI, CONFIG.CONTRACTS.TokenBank);
-                if (!contract) { console.error('无法获取合约实例'); return; }
+                
+                if (!contract) {
+                    console.error('无法获取合约实例');
+                    return;
+                }
+                
+                // 加载全局数据
                 const globalStats = await contract.methods.getGlobalStats().call();
                 const rateStats = await contract.methods.getRateStats().call();
                 const globalRanking = await contract.methods.getGlobalRankingInfo().call();
+                
+                // 更新全局统计
                 document.getElementById('globalUsers').textContent = Number(globalStats.userCount).toLocaleString();
                 document.getElementById('globalCommunities').textContent = Number(globalRanking.totalGlobalCommunities).toLocaleString();
                 document.getElementById('globalMinted').innerHTML = formatNumber(globalStats.allTotalAmount, 6);
@@ -686,12 +1153,21 @@
                 document.getElementById('globalUSDT').innerHTML = formatNumber(globalStats.allTotalUSDTResonance, 18) + ' USDT';
                 document.getElementById('tokenTax').textContent = (Number(rateStats.tokenTax) / 100).toFixed(2) + '%';
                 document.getElementById('interestRate').textContent = (Number(rateStats.interestRate) / 100).toFixed(2) + '%';
+                
                 updateContractRuntime(globalStats.startTimer);
-                document.getElementById('rankedCount').textContent = Number(globalRanking.totalRankedCommunities) + '/1000';
+                
+                // 更新排名状态
+                const totalRanked = Number(globalRanking.totalRankedCommunities);
+                document.getElementById('rankedCount').textContent = `${totalRanked}/${TOTAL_RANKED_CAPACITY}`;
+                
+                // 加载层级信息
                 loadLayersInfo(globalRanking);
                 totalCommunities = Number(globalRanking.totalGlobalCommunities);
+                
+                // 加载用户数据（如果已连接钱包）
                 if (web3Manager.account) {
                     console.log('已连接钱包:', web3Manager.account);
+                    
                     const userInfo = await contract.methods.getUserInfo().call({ from: web3Manager.account });
                     document.getElementById('totalMinted').innerHTML = formatNumber(userInfo.totalMintedVollar, 6);
                     document.getElementById('vollarFromVID').innerHTML = formatNumber(userInfo.vollarFromVID, 6);
@@ -708,51 +1184,95 @@
                     document.getElementById('exchangedVID').innerHTML = formatNumber(userInfo.exchangedVID, 6) + ' VID';
                     document.getElementById('usdtForVID').innerHTML = formatNumber(userInfo.usdtForVIDAmount, 18) + ' USDT';
                     document.getElementById('getTotalVID').innerHTML = formatNumber(userInfo.getTotalVID, 6) + ' VID';
+                    
                     const refStatus = await contract.methods.getUserRefInterestStatus().call({ from: web3Manager.account });
                     document.getElementById('myReferrer').textContent = formatAddress(refStatus.myReferrer);
                     document.getElementById('myReferrerCommunity').textContent = formatAddress(refStatus.myReferrerCommunity);
                     document.getElementById('totalFirstLevel').textContent = Number(refStatus.totalFirstLevelMembers);
                     document.getElementById('activeInterest').textContent = Number(refStatus.activeInterestCount);
                     document.getElementById('inactiveInterest').textContent = Number(refStatus.totalFirstLevelMembers) - Number(refStatus.activeInterestCount);
-                    document.getElementById('teamBadge').textContent = refStatus.activeInterestCount + '/' + refStatus.totalFirstLevelMembers + ' 生息';
+                    document.getElementById('teamBadge').textContent = `${refStatus.activeInterestCount}/${refStatus.totalFirstLevelMembers} 生息`;
+                    
                     const rankingInfo = await contract.methods.getUserRankingInfo().call({ from: web3Manager.account });
                     const isCommunity = await contract.methods.amICommunityMember().call({ from: web3Manager.account });
-                    displayRankingState({ isCommunity, isRanked: rankingInfo.isRanked, globalRank: Number(rankingInfo.globalRank), layer: Number(rankingInfo.layer), performance: rankingInfo.performance, rankInLayer: Number(rankingInfo.rankInLayer), layerTotal: Number(rankingInfo.layerTotal), exchangeRate: Number(rankingInfo.exchangeRate) }, globalRanking);
+                    
+                    displayRankingState({
+                        isCommunity,
+                        isRanked: rankingInfo.isRanked,
+                        globalRank: Number(rankingInfo.globalRank),
+                        layer: Number(rankingInfo.layer),
+                        performance: rankingInfo.performance,
+                        rankInLayer: Number(rankingInfo.rankInLayer),
+                        layerTotal: Number(rankingInfo.layerTotal),
+                        exchangeRate: Number(rankingInfo.exchangeRate)
+                    }, globalRanking);
                 } else {
                     console.log('钱包未连接');
                     document.getElementById('rankingBadge').textContent = '未连接钱包';
                     document.getElementById('rankingStateA').style.display = 'block';
                     document.getElementById('communityFee').innerHTML = formatNumberFull(globalRanking.communityMintingFee, 6);
                 }
+                
+                // 加载排行榜
                 loadLeaderboard('performance');
                 console.log('数据加载完成');
-            } catch (error) { console.error('加载数据失败:', error); }
+            } catch (error) {
+                console.error('加载数据失败:', error);
+            }
         }
 
+        // ========== 界面控制函数 ==========
         function switchTab(type) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
+            
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById(type).classList.add('active');
-            if (!leaderboardLoaded[type]) { loadLeaderboard(type); }
+
+			loadLeaderboard(type);
         }
 
         function switchPage(page) {
-            const pages = { 'home': 'index.html', 'stats': 'data.html', 'swap': 'exchange.html', 'temple': 'temple.html' };
-            if (pages[page]) window.location.href = pages[page];
+            const pages = {
+                'home': 'index.html',
+                'stats': 'data.html',
+                'swap': 'exchange.html',
+                'temple': 'temple.html'
+            };
+            
+            if (pages[page]) {
+                window.location.href = pages[page];
+            }
         }
 
-        function refreshData() {
-            const icon = document.getElementById('refreshIcon');
-            icon.classList.add('spinning');
-            currentPage = { performance: 0, minting: 0, referral: 0 };
-            leaderboardLoaded = { performance: false, minting: false, referral: false };
-            totalCommunities = 0;
-            setTimeout(() => { icon.classList.remove('spinning'); loadData(); }, 500);
+		// 找到 refreshData() 函数（大约在第380行）
+		function refreshData() {
+			const icon = document.getElementById('refreshIcon');
+			icon.classList.add('spinning');
+			
+			currentPage = { performance: 0, minting: 0, referral: 0 };
+			leaderboardLoaded = { performance: false, minting: false, referral: false };
+			totalCommunities = 0;
+			
+			// ✅ 新增：清除排行榜缓存
+			if (window.leaderboardCache) {
+				window.leaderboardCache = {};
+			}
+			
+			setTimeout(() => {
+				icon.classList.remove('spinning');
+				loadData();
+			}, 500);
+		}
+
+        function goBack() {
+            window.history.back();
         }
 
-        function goBack() { window.history.back(); }
-        window.onload = function() { setTimeout(loadData, 100); };
+        // ========== 初始化 ==========
+        window.onload = function() {
+            setTimeout(loadData, 100);
+        };
     </script>
 </body>
 </html>
