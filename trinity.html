@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>信仰圣地</title>
+	<link rel="icon" href="./favicon.ico" type="image/x-icon">
+	<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0520 0%, #1a0b3d 50%, #2d1055 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+            position: relative;
+            padding-bottom: 40px;
+        }
+
+        /* ==================== 返回按钮 ==================== */
+        .back-btn {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 100;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 12px;
+            padding: 10px 16px;
+            color: #e9d5ff;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .back-btn:hover {
+            background: rgba(168, 85, 247, 0.4);
+            transform: translateX(-2px);
+        }
+        .back-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ==================== 圣殿柱子装饰 ==================== */
+        .temple-pillar {
+            position: fixed;
+            top: 0;
+            width: 50px;
+            height: 100vh;
+            background: linear-gradient(180deg, 
+                rgba(168, 85, 247, 0.1) 0%,
+                rgba(168, 85, 247, 0.05) 80%,
+                transparent 100%
+            );
+            pointer-events: none;
+            z-index: 0;
+        }
+        .temple-pillar.left { left: 3%; box-shadow: inset 2px 0 20px rgba(168, 85, 247, 0.3); }
+        .temple-pillar.right { right: 3%; box-shadow: inset -2px 0 20px rgba(168, 85, 247, 0.3); }
+
+        /* 光柱效果 */
+        .light-beam {
+            position: fixed;
+            top: 0;
+            width: 2px;
+            height: 100vh;
+            background: linear-gradient(180deg,
+                rgba(168, 85, 247, 0.6) 0%,
+                rgba(168, 85, 247, 0.2) 30%,
+                transparent 70%
+            );
+            pointer-events: none;
+            z-index: 0;
+            animation: beamPulse 3s ease-in-out infinite;
+        }
+        @keyframes beamPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        /* 粒子背景 */
+        .particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(168, 85, 247, 0.6);
+            border-radius: 50%;
+            animation: floatUp 8s linear infinite;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        /* ==================== 主容器 ==================== */
+        .main-container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 70px 16px 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ==================== 页面标题 ==================== */
+        .page-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .trinity-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .trinity-icon {
+            font-size: 40px;
+            animation: iconGlow 2s ease-in-out infinite;
+        }
+        @keyframes iconGlow {
+            0%, 100% { filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6)); }
+            50% { filter: drop-shadow(0 0 20px rgba(168, 85, 247, 1)); }
+        }
+        .trinity-text {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #e9d5ff 0%, #a855f7 50%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+        }
+        .divider {
+            width: 120px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #a855f7, transparent);
+            margin: 0 auto 12px;
+            border-radius: 2px;
+        }
+        .trinity-subtitle {
+            font-size: 14px;
+            color: rgba(233, 213, 255, 0.7);
+            letter-spacing: 4px;
+            font-weight: 300;
+        }
+
+        /* ==================== 卡片样式 ==================== */
+        .stat-card, .action-card {
+            background: linear-gradient(145deg, 
+                rgba(30, 15, 60, 0.9) 0%,
+                rgba(20, 10, 45, 0.95) 100%
+            );
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 20px;
+            padding: 22px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+        .stat-card:hover, .action-card:hover {
+            border-color: rgba(168, 85, 247, 0.5);
+            box-shadow: 
+                0 12px 40px rgba(168, 85, 247, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: 600;
+            color: #e9d5ff;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+        }
+        .card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-header-right {
+            font-size: 14px;
+            font-weight: 400;
+            color: rgba(233, 213, 255, 0.8);
+        }
+
+        /* ==================== 统计项 ==================== */
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.1);
+        }
+        .stat-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .stat-label {
+            font-size: 15px;
+            color: rgba(233, 213, 255, 0.85);
+            font-weight: 400;
+        }
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            text-align: right;
+        }
+        .stat-value.highlight {
+            color: #c084fc;
+            text-shadow: 0 0 10px rgba(192, 132, 252, 0.4);
+        }
+        .stat-value.success {
+            color: #4ade80;
+        }
+        .stat-value.warning {
+            color: #fbbf24;
+        }
+
+        /* ==================== 输入框组 ==================== */
+        .input-group {
+            margin-bottom: 18px;
+        }
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: rgba(10, 5, 30, 0.6);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 14px;
+            padding: 4px;
+            transition: all 0.3s;
+        }
+        .input-wrapper:focus-within {
+            border-color: #a855f7;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+        }
+        .input-field {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 14px 16px;
+            font-size: 18px;
+            color: #fff;
+            outline: none;
+            min-width: 0;
+        }
+        .input-field::placeholder {
+            color: rgba(233, 213, 255, 0.4);
+        }
+        .input-field::-webkit-outer-spin-button,
+        .input-field::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .max-btn {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 4px;
+            transition: all 0.3s;
+        }
+        .max-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+        }
+        .max-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ==================== 按钮样式 ==================== */
+        .trinity-btn {
+            width: 100%;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #c084fc 100%);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(168, 85, 247, 0.5);
+        }
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0) scale(0.98);
+        }
+        .btn-secondary {
+            background: rgba(168, 85, 247, 0.15);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            color: #e9d5ff;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(168, 85, 247, 0.25);
+            border-color: rgba(168, 85, 247, 0.6);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+        }
+        .btn-success:hover:not(:disabled) {
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+        }
+        .btn-disabled, .trinity-btn:disabled {
+            background: rgba(100, 100, 100, 0.3) !important;
+            color: rgba(255, 255, 255, 0.4) !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        /* 按钮组 */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .btn-group .trinity-btn {
+            flex: 1;
+        }
+
+        /* ==================== 倒计时 ==================== */
+        .countdown-display {
+            text-align: center;
+            padding: 16px;
+            background: rgba(168, 85, 247, 0.1);
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+        .countdown-label {
+            font-size: 14px;
+            color: rgba(233, 213, 255, 0.7);
+            margin-bottom: 8px;
+        }
+        .countdown-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #c084fc;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 15px rgba(192, 132, 252, 0.5);
+        }
+        .countdown-value.ready {
+            color: #4ade80;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* ==================== 进度条 ==================== */
+        .progress-container {
+            margin: 16px 0;
+        }
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: rgba(233, 213, 255, 0.7);
+            margin-bottom: 8px;
+        }
+        .progress-bar {
+            height: 10px;
+            background: rgba(10, 5, 30, 0.6);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7c3aed, #a855f7, #c084fc);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+        }
+
+        /* ==================== 提示框 ==================== */
+        .tooltip {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+        .help-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: rgba(168, 85, 247, 0.3);
+            border-radius: 50%;
+            font-size: 12px;
+            color: #e9d5ff;
+            cursor: help;
+            margin-left: 6px;
+        }
+        .tooltiptext {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 15, 60, 0.98);
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            border-radius: 12px;
+            padding: 14px;
+            width: 280px;
+            font-size: 13px;
+            font-weight: 400;
+            color: rgba(233, 213, 255, 0.9);
+            line-height: 1.6;
+            z-index: 100;
+            transition: all 0.3s;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* ==================== 加载和消息 ==================== */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 5, 32, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        .loading-overlay.show { display: flex; }
+        .loading-content {
+            text-align: center;
+            color: #e9d5ff;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(168, 85, 247, 0.3);
+            border-top-color: #a855f7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text {
+            font-size: 16px;
+            color: #e9d5ff;
+        }
+
+        .message-toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            z-index: 1001;
+            opacity: 0;
+            transition: all 0.3s;
+            max-width: 90%;
+            text-align: center;
+        }
+        .message-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .message-toast.success {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+        }
+        .message-toast.error {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        /* ==================== 信息提示 ==================== */
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 14px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: rgba(191, 219, 254, 0.9);
+            line-height: 1.6;
+        }
+        .info-box.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.3);
+            color: rgba(254, 243, 199, 0.9);
+        }
+
+        /* ==================== 移动端键盘处理 ==================== */
+        @media (hover: none) and (pointer: coarse) {
+            body.keyboard-open .back-btn {
+                opacity: 0;
+                pointer-events: none;
+            }
+        }
+
+        /* ==================== 响应式 ==================== */
+        @media (max-width: 480px) {
+            .main-container {
+                padding: 65px 12px 25px;
+            }
+            .trinity-text {
+                font-size: 26px;
+            }
+            .trinity-icon {
+                font-size: 32px;
+            }
+            .stat-card, .action-card {
+                padding: 18px;
+                border-radius: 16px;
+            }
+            .card-header {
+                font-size: 16px;
+            }
+            .stat-label {
+                font-size: 14px;
+            }
+            .stat-value {
+                font-size: 15px;
+            }
+            .input-field {
+                font-size: 16px;
+                padding: 12px 14px;
+            }
+            .trinity-btn {
+                padding: 14px 20px;
+                font-size: 16px;
+            }
+            .countdown-value {
+                font-size: 24px;
+            }
+            .back-btn {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 返回按钮 -->
+    <button class="back-btn" onclick="goBack()">
+        <span>←</span>
+        <span>返回</span>
+    </button>
+
+    <!-- 圣殿柱子装饰 -->
+    <div class="temple-pillar left"></div>
+    <div class="temple-pillar right"></div>
+
+    <!-- 光柱效果 -->
+    <div class="light-beam" style="left: 12%;"></div>
+    <div class="light-beam" style="left: 88%;"></div>
+    <div class="light-beam" style="left: 25%;"></div>
+    <div class="light-beam" style="left: 75%;"></div>
+
+    <!-- 粒子背景容器 -->
+    <div class="particles-container" id="particlesContainer"></div>
+
+    <div class="main-container">
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <h1 class="trinity-title">
+                <span class="trinity-icon">🔱</span>
+                <span class="trinity-text">信仰圣地</span>
+            </h1>
+            <div class="divider"></div>
+            <p class="trinity-subtitle">TRINITY PROTOCOL</p>
+        </div>
+
+        <!-- 协议概况 -->
+        <div class="stat-card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    📊 协议概况
+                    <span class="tooltip">
+                        <span class="help-icon">?</span>
+                        <span class="tooltiptext">💡 三位一体协议状态<br><br>• 累计注入：全网用户累计存入的USDT总量<br><br>• 合约VID：协议持有的VID余额<br><br>• 合约VDS：可分配的VDS储备<br><br>• 净流出VDS：用户领取的VDS总量减去已回购的VDS</span>
+                    </span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">累计注入 USDT</span>
+                <span class="stat-value highlight" id="totalDeposited">0.00</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">合约 VID 余额</span>
+                <span class="stat-value" id="contractVID">0.00</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">合约 VDS 余额</span>
+                <span class="stat-value highlight" id="contractVDS">0.00</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">净流出 VDS</span>
+                <span class="stat-value warning" id="netVDSOutflow">0.00</span>
+            </div>
+        </div>
+
+        <!-- 注入 USDT -->
+        <div class="action-card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    💰 注入 USDT
+                    <span class="tooltip">
+                        <span class="help-icon">?</span>
+                        <span class="tooltiptext">💡 注入USDT构筑超级信仰<br><br><b>资金分配：</b><br>• 90% 购买VID → 部分注入分红库，部分留在合约用于执行平衡<br>• 10% 添加流动性 → LP永久销毁<br><br><b>获得VDS信仰代币：</b><br>• 当前价值约等于注入的USDT等值<br>• 注入后等待10分钟可领取<br>• 可随时交易卖出<br>• 参与圣殿质押将获得VID超级分红</span>
+                    </span>
+                </div>
+                <div class="card-header-right">
+                    余额: <span id="usdtBalance">0.00</span> USDT
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <input type="number" class="input-field" id="depositAmount" placeholder="输入注入数量 (1-10000)" min="1" max="10000" step="0.01">
+                    <button class="max-btn" onclick="setMaxDeposit()">最大</button>
+                </div>
+            </div>
+
+            <div class="info-box">
+                📌 注入范围：1 - 10,000 USDT<br>
+                ⏱️ 注入后10分钟可领取VDS奖励
+            </div>
+
+            <button class="trinity-btn btn-primary" onclick="handleDeposit()" id="depositBtn">
+                <span>🚀 注入 USDT</span>
+            </button>
+        </div>
+
+        <!-- 领取 VDS -->
+        <div class="stat-card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    🎁 领取 VDS
+                    <span class="tooltip">
+                        <span class="help-icon">?</span>
+                        <span class="tooltiptext">💡 您在协议中的个人数据<br><br>• 累计注入：您总共存入的USDT<br><br>• 累计领取：您已领取的VDS总量<br><br>• 待领取：可以领取的VDS数量<br><br>• 存入10分钟后可领取VDS</span>
+                    </span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">累计注入 USDT</span>
+                <span class="stat-value" id="userDeposited">0.00</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">累计领取 VDS</span>
+                <span class="stat-value success" id="userClaimed">0.00</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">待领取 VDS</span>
+                <span class="stat-value highlight" id="userPending">0.00</span>
+            </div>
+            <div class="countdown-display">
+                <div class="countdown-label">距离领取时间</div>
+                <div class="countdown-value" id="claimCountdown">--:--:--</div>
+            </div>
+            <button class="trinity-btn btn-success" onclick="handleClaimVDS()" id="claimBtn">
+                <span>🎁 领取 VDS</span>
+            </button>
+        </div>
+
+        <!-- 执行平衡 -->
+        <div class="stat-card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    ⚖️ VDS/VID 池子平衡
+                    <span class="tooltip">
+                        <span class="help-icon">?</span>
+                        <span class="tooltiptext">💡 VDS/VID 交易对池子信息<br><br>• 当前比率：VID/VDS 价格比<br><br>• 平衡所需VID：下次平衡操作需要的VID数量<br><br>• 平衡冷却：每次平衡操作后需等待1小时</span>
+                    </span>
+                </div>
+            </div>
+				<div class="stat-item" style="display: flex; align-items: center; justify-content: space-between;">
+					<span class="stat-label" style="flex-shrink: 0;">VDS交易价格</span>
+					<div style="display: flex; align-items: center; margin-left: auto;">
+						<span class="stat-value highlight" id="currentRatio" style="margin-right: 4px;">0</span>
+						<span style="
+							font-size: 14px;
+							font-weight: 800;
+							background: linear-gradient(135deg, #ffd700 0%, #ffffff 100%);
+							-webkit-background-clip: text;
+							-webkit-text-fill-color: transparent;
+							text-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
+							margin-left: 1px;
+						">VID/VDS</span>
+					</div>
+				</div>
+            <div class="stat-item">
+                <span class="stat-label">平衡所需 VID</span>
+                <span class="stat-value" id="nextRebalanceVID">0.00</span>
+            </div>
+            <div class="countdown-display">
+                <div class="countdown-label">距离平衡时间</div>
+                <div class="countdown-value" id="rebalanceCountdown">--:--:--</div>
+            </div>
+            <button class="trinity-btn btn-warning" onclick="handleMaintainBalance()" id="maintainBtn">
+                <span>⚖️ 执行平衡</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 加载遮罩 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loadingText">处理中...</div>
+        </div>
+    </div>
+
+    <!-- 消息提示 -->
+    <div class="message-toast" id="messageToast"></div>
+
+    <!-- 引入配置和Web3管理器 -->
+    <script src="js/config.js"></script>
+    <script src="js/web3-manager.js"></script>
+
+    <script>
+        // ==================== 状态管理 ====================
+        let trinityState = {
+            // 系统状态
+            totalDeposited: '0',
+            contractVIDBalance: '0',
+            contractVDSBalance: '0',
+            netVDSOutflow: '0',
+            // 池子状态
+            currentRatio: 0,
+            nextRebalanceVID: '0',
+            nextRebalanceTime: 0,
+            // 用户状态
+            userDeposited: '0',
+            userClaimed: '0',
+            userPending: '0',
+            userDepositTime: 0,
+            // USDT余额和授权
+            usdtBalance: '0',
+            usdtAllowance: '0',
+            // 连接状态
+            isConnected: false
+        };
+
+        // 常量
+        const CLAIM_DELAY = 10 * 60; // 10分钟
+        const REBALANCE_COOLDOWN = 60 * 60; // 1小时
+        const MIN_DEPOSIT = 1;
+        const MAX_DEPOSIT = 10000;
+
+        // ==================== 初始化 ====================
+        async function init() {
+            console.log('🔱 初始化信仰圣地...');
+            
+            // 初始化粒子效果
+            initParticles();
+            
+            // 初始化Web3
+            const web3Ready = await web3Manager.init();
+            if (!web3Ready) {
+                console.warn('Web3未就绪');
+                return;
+            }
+
+            // 检查是否已连接
+            if (window.ethereum && window.ethereum.selectedAddress) {
+                await web3Manager.connect();
+                trinityState.isConnected = true;
+            }
+
+            // 监听账户变化
+            web3Manager.onAccountChanged = async (account) => {
+                console.log('账户变化:', account);
+                if (account) {
+                    trinityState.isConnected = true;
+                    await loadAllData();
+                } else {
+                    trinityState.isConnected = false;
+                    resetUI();
+                }
+            };
+
+            // 加载数据
+            await loadAllData();
+
+            // 启动定时更新
+            startCountdownTimers();
+            setInterval(loadAllData, 60000); // 60秒刷新一次
+        }
+
+        // ==================== 数据加载 ====================
+        async function loadAllData() {
+            try {
+                await Promise.all([
+                    loadTrinityStatus(),
+                    loadPoolStatus(),
+                    loadUserInfo(),
+                    loadUSDTBalance()
+                ]);
+                updateUI();
+            } catch (error) {
+                console.error('加载数据失败:', error);
+            }
+        }
+
+        // 加载协议状态
+        async function loadTrinityStatus() {
+            try {
+                const contract = web3Manager.getContract(VDSTRINITY_ABI, CONFIG.CONTRACTS.TRINITY);
+                const status = await contract.methods.getTrinityStatus().call();
+                
+                trinityState.totalDeposited = status.totalDeposited;
+                trinityState.contractVIDBalance = status.contractVIDBalance;
+                trinityState.contractVDSBalance = status.contractVDSBalance;
+                trinityState.netVDSOutflow = status.netVDSOutflowed;
+                
+                console.log('📊 协议状态:', status);
+            } catch (error) {
+                console.error('加载协议状态失败:', error);
+            }
+        }
+
+        // 加载池子状态
+        async function loadPoolStatus() {
+            try {
+                const contract = web3Manager.getContract(VDSTRINITY_ABI, CONFIG.CONTRACTS.TRINITY);
+                const status = await contract.methods.getVDSVIDPoolStatus().call();
+                
+                trinityState.currentRatio = status.currentRatio;
+                trinityState.nextRebalanceVID = status.nextRebalance;
+                trinityState.nextRebalanceTime = parseInt(status.nextReTimer);
+                
+                console.log('⚖️ 池子状态:', status);
+            } catch (error) {
+                console.error('加载池子状态失败:', error);
+            }
+        }
+
+        // 加载用户信息
+        async function loadUserInfo() {
+            if (!web3Manager.account) return;
+            
+            try {
+                const contract = web3Manager.getContract(VDSTRINITY_ABI, CONFIG.CONTRACTS.TRINITY);
+                const info = await contract.methods.getUserInfo().call({ from: web3Manager.account });
+                
+                trinityState.userDeposited = info.totalDeposited;
+                trinityState.userClaimed = info.totalClaimed;
+                trinityState.userPending = info.pendingVDS;
+                trinityState.userDepositTime = parseInt(info.depositTime);
+                
+                console.log('👤 用户信息:', info);
+            } catch (error) {
+                console.error('加载用户信息失败:', error);
+            }
+        }
+
+        // 加载USDT余额和授权
+        async function loadUSDTBalance() {
+            if (!web3Manager.account) return;
+            
+            try {
+                // 获取余额
+                const usdtContract = web3Manager.getContract(ERC20_ABI, CONFIG.CONTRACTS.USDT);
+                const balance = await usdtContract.methods.balanceOf(web3Manager.account).call();
+                trinityState.usdtBalance = balance;
+                
+                // 获取授权额度
+                const allowance = await usdtContract.methods.allowance(
+                    web3Manager.account, 
+                    CONFIG.CONTRACTS.TRINITY
+                ).call();
+                trinityState.usdtAllowance = allowance;
+                
+                console.log('💰 USDT余额:', formatNumber(balance, 18), '授权:', formatNumber(allowance, 18));
+            } catch (error) {
+                console.error('加载USDT余额失败:', error);
+            }
+        }
+
+        // ==================== UI更新 ====================
+        function updateUI() {
+            // 协议概况
+            document.getElementById('totalDeposited').textContent = formatNumber(trinityState.totalDeposited, 18) + ' USDT';
+            document.getElementById('contractVID').textContent = formatNumber(trinityState.contractVIDBalance, 6) + ' VID';
+            document.getElementById('contractVDS').textContent = formatNumber(trinityState.contractVDSBalance, 8) + ' VDS';
+            document.getElementById('netVDSOutflow').textContent = formatNumber(trinityState.netVDSOutflow, 8) + ' VDS';
+            
+            // 池子状态
+            document.getElementById('currentRatio').textContent = trinityState.currentRatio;
+            document.getElementById('nextRebalanceVID').textContent = formatNumber(trinityState.nextRebalanceVID, 6) + ' VID';
+            
+            // 用户信息
+            document.getElementById('userDeposited').textContent = formatNumber(trinityState.userDeposited, 18) + ' USDT';
+            document.getElementById('userClaimed').textContent = formatNumber(trinityState.userClaimed, 8) + ' VDS';
+            document.getElementById('userPending').textContent = formatNumber(trinityState.userPending, 8) + ' VDS';
+            
+            // USDT余额
+            document.getElementById('usdtBalance').textContent = formatNumber(trinityState.usdtBalance, 18);
+            
+            // 更新按钮状态
+            updateButtonStates();
+        }
+
+        function resetUI() {
+            document.getElementById('userDeposited').textContent = '0.00 USDT';
+            document.getElementById('userClaimed').textContent = '0.00 VDS';
+            document.getElementById('userPending').textContent = '0.00 VDS';
+            document.getElementById('usdtBalance').textContent = '0.00';
+            document.getElementById('claimCountdown').textContent = '--:--:--';
+        }
+
+        function updateButtonStates() {
+            const now = Math.floor(Date.now() / 1000);
+            
+            // 领取按钮状态
+            const claimBtn = document.getElementById('claimBtn');
+            const canClaim = trinityState.userDepositTime > 0 && 
+                            now >= trinityState.userDepositTime + CLAIM_DELAY &&
+                            BigInt(trinityState.userPending) > 0n;
+            
+            claimBtn.disabled = !canClaim || !trinityState.isConnected;
+            if (!trinityState.isConnected) {
+                claimBtn.innerHTML = '<span>请先连接钱包</span>';
+                claimBtn.className = 'trinity-btn btn-disabled';
+            } else if (BigInt(trinityState.userPending) === 0n) {
+                claimBtn.innerHTML = '<span>暂无可领取</span>';
+                claimBtn.className = 'trinity-btn btn-disabled';
+            } else if (!canClaim) {
+                claimBtn.innerHTML = '<span>⏳ 等待中...</span>';
+                claimBtn.className = 'trinity-btn btn-disabled';
+            } else {
+                claimBtn.innerHTML = '<span>🎁 领取 VDS</span>';
+                claimBtn.className = 'trinity-btn btn-success';
+            }
+            
+            // 平衡按钮状态
+            const maintainBtn = document.getElementById('maintainBtn');
+            const hasEnoughVDS = BigInt(trinityState.netVDSOutflow) >= BigInt(trinityState.nextRebalanceVID);
+            const hasEnoughVID = BigInt(trinityState.contractVIDBalance) >= BigInt(trinityState.nextRebalanceVID);
+            const canMaintain = now >= trinityState.nextRebalanceTime && 
+                               BigInt(trinityState.nextRebalanceVID) > 0n &&
+                               hasEnoughVID &&
+                               hasEnoughVDS;
+            
+            maintainBtn.disabled = !canMaintain || !trinityState.isConnected;
+            if (!trinityState.isConnected) {
+                maintainBtn.innerHTML = '<span>请先连接钱包</span>';
+                maintainBtn.className = 'trinity-btn btn-disabled';
+            } else if (BigInt(trinityState.nextRebalanceVID) === 0n) {
+                maintainBtn.innerHTML = '<span>当前价格无需平衡</span>';
+                maintainBtn.className = 'trinity-btn btn-disabled';
+            } else if (!hasEnoughVID) {
+                maintainBtn.innerHTML = '<span>合约VID不足</span>';
+                maintainBtn.className = 'trinity-btn btn-disabled';
+            } else if (!hasEnoughVDS) {
+                maintainBtn.innerHTML = '<span>净流出VDS不足</span>';
+                maintainBtn.className = 'trinity-btn btn-disabled';
+            } else if (now < trinityState.nextRebalanceTime) {
+                maintainBtn.innerHTML = '<span>⏳ 冷却中...</span>';
+                maintainBtn.className = 'trinity-btn btn-disabled';
+            } else {
+                maintainBtn.innerHTML = '<span>⚖️ 执行平衡</span>';
+                maintainBtn.className = 'trinity-btn btn-warning';
+            }
+            
+            // 注入按钮状态
+            const depositBtn = document.getElementById('depositBtn');
+            if (!trinityState.isConnected) {
+                depositBtn.innerHTML = '<span>请先连接钱包</span>';
+                depositBtn.className = 'trinity-btn btn-disabled';
+                depositBtn.disabled = true;
+            } else {
+                depositBtn.innerHTML = '<span>🚀 注入 USDT</span>';
+                depositBtn.className = 'trinity-btn btn-primary';
+                depositBtn.disabled = false;
+            }
+        }
+
+        // ==================== 倒计时 ====================
+        function startCountdownTimers() {
+            setInterval(() => {
+                const now = Math.floor(Date.now() / 1000);
+                
+                // 领取倒计时
+                const claimElement = document.getElementById('claimCountdown');
+                if (trinityState.userDepositTime > 0) {
+                    const claimTime = trinityState.userDepositTime + CLAIM_DELAY;
+                    const claimRemaining = claimTime - now;
+                    
+                    if (claimRemaining <= 0) {
+                        claimElement.textContent = '时间已满足';
+                        claimElement.classList.add('ready');
+                    } else {
+                        claimElement.textContent = formatCountdown(claimRemaining);
+                        claimElement.classList.remove('ready');
+                    }
+                } else {
+                    claimElement.textContent = '--:--:--';
+                    claimElement.classList.remove('ready');
+                }
+                
+                // 平衡倒计时
+                const rebalanceElement = document.getElementById('rebalanceCountdown');
+                const rebalanceRemaining = trinityState.nextRebalanceTime - now;
+                
+                if (rebalanceRemaining <= 0) {
+                    rebalanceElement.textContent = '时间已满足';
+                    rebalanceElement.classList.add('ready');
+                } else {
+                    rebalanceElement.textContent = formatCountdown(rebalanceRemaining);
+                    rebalanceElement.classList.remove('ready');
+                }
+                
+                // 更新按钮状态
+                updateButtonStates();
+            }, 1000);
+        }
+
+        function formatCountdown(seconds) {
+            if (seconds <= 0) return '00:00:00';
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        // ==================== 交易处理 ====================
+        
+        // 注入USDT
+        async function handleDeposit() {
+            const input = document.getElementById('depositAmount');
+            const amount = parseFloat(input.value);
+            
+            if (!web3Manager.account) {
+                showError('请先连接钱包');
+                return;
+            }
+            
+            if (!amount || amount < MIN_DEPOSIT || amount > MAX_DEPOSIT) {
+                showError(`请输入 ${MIN_DEPOSIT} - ${MAX_DEPOSIT} 之间的数量`);
+                return;
+            }
+			// 🔴 最简化的检查
+			const minVDS = 10 * 10**8; // 10个VDS，精度8位
+			
+			if (BigInt(trinityState.contractVDSBalance) < minVDS) {
+				showError('⚠️ 合约VDS储备不足（少于10 VDS）');
+				return;
+			}
+			
+            // 检查余额
+            const balanceNum = parseFloat(trinityState.usdtBalance) / 1e18;
+            if (amount > balanceNum) {
+                showError('USDT余额不足');
+                return;
+            }
+            
+            const btn = document.getElementById('depositBtn');
+            btn.disabled = true;
+            
+            try {
+                showLoading('处理中...');
+                
+                const amountWei = toContractAmount(amount, 18);
+                
+                // 检查授权
+                if (BigInt(trinityState.usdtAllowance) < BigInt(amountWei)) {
+                    showLoading('授权 USDT...');
+                    await web3Manager.approve(
+                        CONFIG.CONTRACTS.USDT,
+                        CONFIG.CONTRACTS.TRINITY,
+                        amountWei
+                    );
+                }
+                
+                // 执行注入
+                showLoading('注入中...');
+                const contract = web3Manager.getContract(VDSTRINITY_ABI, CONFIG.CONTRACTS.TRINITY);
+                await web3Manager.sendTransaction(contract, 'deposit', [amountWei]);
+                
+                hideLoading();
+                showSuccess('注入成功！10分钟后可领取VDS');
+                
+                input.value = '';
+                await loadAllData();
+                
+            } catch (error) {
+                console.error('注入失败:', error);
+                hideLoading();
+				// ==================== 🎯 简化版错误处理 ====================
+				const errorMsg = error.message || '';
+				
+				if (errorMsg.includes('用户取消') || errorMsg.includes('User denied') || 
+					errorMsg.includes('rejected') || errorMsg.includes('cancelled')) {
+					showError('❌ 用户取消交易');
+					
+				} else if (errorMsg.includes('Contract VDS insufficient') || 
+						   errorMsg.includes('Insufficient VDS')) {
+					showError('⚠️ 合约VDS储备不足，请稍后再试');
+					
+				} else if (errorMsg.includes('Below minimum')) {
+					showError(`❌ 最少注入 ${MIN_DEPOSIT} USDT`);
+					
+				} else if (errorMsg.includes('Exceeds maximum')) {
+					showError(`❌ 最多注入 ${MAX_DEPOSIT} USDT`);
+					
+				} else if (errorMsg.includes('insufficient') || errorMsg.includes('余额不足')) {
+					showError('❌ USDT余额不足');
+					
+				} else if (errorMsg.includes('gas') || errorMsg.includes('Gas')) {
+					showError('❌ Gas费用不足，请确保有足够的BNB');
+					
+				} else {
+					// 其他错误显示简短信息
+					showError('❌ 交易失败，请重试');
+				}
+		// ==================== 结束 ====================
+			} finally {
+                btn.disabled = false;
+                updateButtonStates();
+            }
+        }
+
+        // 领取VDS
+        async function handleClaimVDS() {
+            if (!web3Manager.account) {
+                showError('请先连接钱包');
+                return;
+            }
+            
+            const btn = document.getElementById('claimBtn');
+            btn.disabled = true;
+            
+            try {
+                showLoading('领取中...');
+                
+                const contract = web3Manager.getContract(VDSTRINITY_ABI, CONFIG.CONTRACTS.TRINITY);
+                await web3Manager.sendTransaction(contract, 'claimVDS', []);
+                
+                hideLoading();
+                showSuccess('领取成功！');
+                
+                await loadAllData();
+                
+            } catch (error) {
+                console.error('领取失败:', error);
+                hideLoading();
+                if (error.message.includes('用户取消')) {
+                    showError('用户取消交易');
+                } else if (error.message.includes('No pending')) {
+                    showError('暂无可领取的VDS');
+                } else if (error.message.includes('not available yet')) {
+                    showError('还未到领取时间，请等待10分钟');
+                } else {
+                    showError('领取失败：' + error.message);
+                }
+            } finally {
+                updateButtonStates();
+            }
+        }
+
+        // 执行平衡
+        async function handleMaintainBalance() {
+            if (!web3Manager.account) {
+                showError('请先连接钱包');
+                return;
+            }
+            
+            const btn = document.getElementById('maintainBtn');
+            btn.disabled = true;
+            
+            try {
+                showLoading('执行平衡...');
+                
+                const contract = web3Manager.getContract(VDSTRINITY_ABI, CONFIG.CONTRACTS.TRINITY);
+                await web3Manager.sendTransaction(contract, 'maintainVDSBalance', []);
+                
+                hideLoading();
+                showSuccess('平衡执行成功！');
+                
+                await loadAllData();
+                
+            } catch (error) {
+                console.error('平衡失败:', error);
+                hideLoading();
+                if (error.message.includes('用户取消')) {
+                    showError('用户取消交易');
+                } else if (error.message.includes('cooldown')) {
+                    showError('平衡冷却中，请稍后再试');
+                } else if (error.message.includes('No VID needed')) {
+                    showError('当前无需平衡');
+                } else {
+                    showError('平衡失败：' + error.message);
+                }
+            } finally {
+                updateButtonStates();
+            }
+        }
+
+        // ==================== 工具函数 ====================
+        
+        function formatNumber(num, decimals = 18, displayDecimals = 3) {
+            // 1. 转换为实际数量
+            const actual = Number(num) / Math.pow(10, decimals);
+            if (actual === 0) return "0";
+            
+            // 2. 向下取整到displayDecimals位小数
+            const factor = Math.pow(10, displayDecimals);
+            const floored = Math.floor(actual * factor) / factor;
+            
+            // 3. 转换为字符串并去除末尾的0
+            return floored.toString().replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+        }
+
+        function toContractAmount(amount, decimals) {
+            const factor = BigInt(10 ** decimals);
+            const [intPart, decPart = ''] = amount.toString().split('.');
+            const paddedDec = decPart.padEnd(decimals, '0').slice(0, decimals);
+            return (BigInt(intPart) * factor + BigInt(paddedDec)).toString();
+        }
+
+        function setMaxDeposit() {
+            const balance = parseFloat(trinityState.usdtBalance) / 1e18;
+            const maxAllowed = Math.min(balance, MAX_DEPOSIT);
+            const finalAmount = Math.floor(maxAllowed * 100) / 100; // 向下取整到2位小数
+            document.getElementById('depositAmount').value = finalAmount > 0 ? finalAmount.toFixed(2) : '';
+        }
+
+        function goBack() {
+            if (document.referrer && document.referrer.includes(window.location.host)) {
+                history.back();
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // ==================== 粒子效果 ====================
+        function initParticles() {
+            const container = document.getElementById('particlesContainer');
+            const particleCount = 25;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (6 + Math.random() * 4) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // ==================== 消息提示 ====================
+        function showLoading(text = '处理中...') {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loadingOverlay').classList.add('show');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('show');
+        }
+
+        function showSuccess(message) {
+            const toast = document.getElementById('messageToast');
+            toast.textContent = message;
+            toast.className = 'message-toast success show';
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function showError(message) {
+            const toast = document.getElementById('messageToast');
+            toast.innerHTML = message;
+            toast.className = 'message-toast error show';
+            setTimeout(() => toast.classList.remove('show'), 4000);
+        }
+
+        // ==================== 键盘处理 ====================
+        function initKeyboardHandler() {
+            const inputs = document.querySelectorAll('input[type="number"]');
+            const body = document.body;
+            
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    body.classList.add('keyboard-open');
+                    setTimeout(() => {
+                        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                });
+                
+                input.addEventListener('blur', () => {
+                    body.classList.remove('keyboard-open');
+                });
+            });
+            
+            // 点击外部关闭键盘
+            document.addEventListener('touchstart', (e) => {
+                if (!e.target.closest('.input-wrapper') && !e.target.classList.contains('max-btn')) {
+                    document.activeElement?.blur();
+                }
+            });
+        }
+
+        // ==================== 启动 ====================
+        window.addEventListener('load', () => {
+            init();
+            initKeyboardHandler();
+			// 🔴 添加全局错误监听
+			window.addEventListener('error', (event) => {
+				console.error('全局错误:', event.error);
+			});
+        });
+    </script>
+</body>
+</html>
