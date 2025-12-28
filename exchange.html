@@ -152,10 +152,10 @@
         <!-- Tab滑动导航 -->
         <div class="tab-scroll-container">
             <div class="tab-nav">
-                <div class="tab-item active" onclick="switchTab('usdt-vid')">USDT 兑换 VID</div>
-                <div class="tab-item" onclick="switchTab('vollar-bnb')">Vollar 兑换 BNB</div>
-                <div class="tab-item" onclick="switchTab('vollar-usdt')">Vollar 兑换 USDT</div>
-                <div class="tab-item" onclick="switchTab('vollar-vid')">Vollar 兑换 VID</div>
+                <div class="tab-item active" onclick="switchTab('usdt-vid')">USDT兑换VID</div>
+                <div class="tab-item" onclick="switchTab('vollar-bnb')">Vollar兑换BNB</div>
+                <div class="tab-item" onclick="switchTab('vollar-usdt')">Vollar兑换USDT</div>
+                <div class="tab-item" onclick="switchTab('vollar-vid')">Vollar兑换VID</div>
             </div>
         </div>
 
@@ -163,9 +163,9 @@
         <div class="exchange-card active" id="card-usdt-vid">
             <div class="card-content">
                 <div class="exchange-header">
-                    <div class="info-title">💰 本次兑换</div>
+                    
                     <div class="balance-display">
-                        <span class="balance-label">我的余额:</span>
+                        <span class="balance-label">💰 我的余额:</span>
                         <span class="balance-value" id="usdt-balance">0.00</span> USDT
                     </div>
                 </div>
@@ -180,7 +180,7 @@
                         <div class="exchange-label">获得 VID</div>
                         <div class="exchange-amount exchange-amount-orange" id="usdt-receive">50</div>
                     </div>
-                    <div class="contract-balance-inline">💰 合约余额: <span id="contract-vid-0">0</span> VID</div>
+                    <div class="contract-balance-inline">💰合约余额: <span id="contract-vid-0">0</span> VID</div>
                 </div>
 
                 <button class="exchange-btn btn-disabled" id="btn-usdt-vid" onclick="handleExchange('usdt-vid')">
@@ -202,9 +202,9 @@
                     <div class="tip-title">💡 温馨提示</div>
                     <div class="tip-content">
                         • 兑换间隔：8小时<br>
-                        • 流通量 < 2100万时：固定兑换 1000 USDT<br>
-                        • 流通量 ≥ 2100万时：固定兑换 3000 USDT<br>
-                        • 配额限制：流通量 < 333亿时受配额限制
+                        • 流通量<2100万：固定兑换1000U<br>
+                        • 流通量≥2100万：固定兑换3000U<br>
+                        • 配额：流通量<333亿受配额限制
                     </div>
                 </div>
             </div>
@@ -214,9 +214,9 @@
         <div class="exchange-card" id="card-vollar-bnb">
             <div class="card-content">
                 <div class="exchange-header">
-                    <div class="info-title">💰 本次兑换</div>
+                    
                     <div class="balance-display">
-                        <span class="balance-label">我的余额:</span>
+                        <span class="balance-label">💎 我的余额:</span>
                         <span class="balance-value" id="vollar-bnb-balance">0.00</span> Vollar
                     </div>
                 </div>
@@ -244,7 +244,7 @@
                     <div class="tip-title">💡 温馨提示</div>
                     <div class="tip-content">
                         • 兑换间隔：30天<br>
-                        • 兑换金额：100 Vollar × 社区倍率<br>
+                        • 兑换金额：100Vollar × 社区倍率<br>
                         • 根据合约BNB余额自动调整：<br>
                         &nbsp;&nbsp;≥1000 BNB: 正常兑换<br>
                         &nbsp;&nbsp;≥300 BNB: 减10倍<br>
@@ -260,9 +260,9 @@
         <div class="exchange-card" id="card-vollar-usdt">
             <div class="card-content">
                 <div class="exchange-header">
-                    <div class="info-title">💰 本次兑换</div>
+                    
                     <div class="balance-display">
-                        <span class="balance-label">我的余额:</span>
+                        <span class="balance-label">💎 我的余额:</span>
                         <span class="balance-value" id="vollar-usdt-balance">0.00</span> Vollar
                     </div>
                 </div>
@@ -299,7 +299,7 @@
                     <div class="tip-title">💡 温馨提示</div>
                     <div class="tip-content">
                         • 兑换间隔：30天<br>
-                        • 兑换金额：500 Vollar × 社区倍率<br>
+                        • 兑换金额：500Vollar × 社区倍率<br>
                         • 根据合约USDT余额自动调整：<br>
                         &nbsp;&nbsp;≥3000万: 正常兑换<br>
                         &nbsp;&nbsp;≥2000万: 减10倍<br>
@@ -315,9 +315,9 @@
         <div class="exchange-card" id="card-vollar-vid">
             <div class="card-content">
                 <div class="exchange-header">
-                    <div class="info-title">💰 本次兑换</div>
+                    
                     <div class="balance-display">
-                        <span class="balance-label">我的余额:</span>
+                        <span class="balance-label">💎 我的余额:</span>
                         <span class="balance-value" id="vollar-vid-balance">0.00</span> Vollar
                     </div>
                 </div>
