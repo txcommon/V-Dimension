@@ -2087,21 +2087,29 @@
         }
     }
     
-    function getSubsidyRate(totalSupply) {
-        const millions = totalSupply / 1e12;
-        
-        if (millions < 2) {
-            return 900;
-        } else if (millions < 10) {
-            return 1000 - (millions * 100);
-        } else if (millions < 21) {
-            return 25;
-        } else if (millions < 100) {
-            return 10;
-        } else {
-            return 0;
-        }
-    }
+	function getSubsidyRate(totalSupply) {
+		// 使用整数运算，模拟Solidity
+		const millions = Math.floor(totalSupply / 1e12);
+		
+		if (millions < 2) {
+			return 900;
+		} else if (millions < 10) {
+			return 1000 - (millions * 100);
+		} else if (millions < 21) {
+			return 25;
+		} else if (millions < 100) {
+			return 10;
+		} else {
+			return 0;
+		}
+	}
+
+	// 在 calculateResonate 中
+	if (userState.isCommunity) {
+		const subsidyRate = getSubsidyRate(userState.totalSupply);
+		// 使用整数运算计算补贴
+		subsidyVollar = Math.floor((baseVollar * subsidyRate) / 100);
+	}
 
 	// ==================== 修改 setMaxAmount 函数 ====================
 
