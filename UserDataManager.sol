@@ -17,7 +17,6 @@ contract UserDataManager {
     // 全网利率和税率统计结构体
     struct RateStats {
         uint256 mintRate;                    // 兑换单价
-        uint256 tokenTax;                    // 转账税率
         uint256 interestRate;                // 生息利率
         uint256 vidQuota;                    // VID配额
         uint256 usdtAllocation;              // USDT配额
@@ -28,7 +27,6 @@ contract UserDataManager {
     mapping(address => bool) internal holdingInterest;         //个人持币生息权限
     mapping(address => bool) internal dangerousAddresses;      //限制转账PAIR地址
     mapping(address => uint256) internal interestTime;         //个人生息时间表
-    mapping(address => uint256) internal bnbTime;              //Vollar兑换BNB时间表
     mapping(address => uint256) internal usdtTime;             //Vollar兑换USDT时间表
     mapping(address => uint256) internal vidTime;              //Vollar兑换VID时间表
     mapping(address => uint256) internal uSwapVTime;           //社区USDT兑换VID时间表
@@ -51,7 +49,6 @@ contract UserDataManager {
 
         //全网Vollar兑换资产统计
         uint256 allTotalAmountS;           // 社区销毁总量
-        uint256 allBNBWithdrawn;           // 兑换BNB总量
 
         uint256 allUSDTWithdrawn;          // 兑换USDT总量
         uint256 allVIDWithdrawn;           // 兑换VID总量
@@ -78,7 +75,7 @@ contract UserDataManager {
 
         //兑换资产销毁Vollar统计
         uint128 exchangedBurnedVollar;         // 兑换销毁总额
-        uint128 exchangedBNB;                  // 兑换BNB总额
+        uint128 exchangedUSDT;                 // 兑换USDT总额
 
         //推广奖励VID统计
         uint128 vidRewardsFromRef;            // 个人奖励VID
@@ -90,13 +87,10 @@ contract UserDataManager {
 
         uint256 vollarFromUSDT;               // USDT共振获得Vollar
         uint256 usdtResonanceAmount;          // USDT共振总额Vollar
-        
-        uint256 exchangedUSDT;                 // 兑换USDT总额
+
         uint256 exchangedVID;                  // 兑换VID总额
 
         uint256 communitySubsidyMint;         // 社区补贴获得Vollar
-
-
 
     }
 
@@ -219,22 +213,6 @@ contract UserDataManager {
         // 更新时间
         uSwapVTime[user] = block.timestamp;
     }
-    //更新Vollar兑换BNB数据
-    function completeVollarForBNBUpdate(address user, uint256 amount, uint256 bnbAmount) internal {
-        UserInfo storage u = userInfo[user];
-        
-        // 更新用户数据
-        u.exchangedBurnedVollar += uint128(amount);
-        u.exchangedBNB += uint128(bnbAmount);
-        
-        // 更新系统数据
-        globalStats.allTotalAmountS += amount;
-        globalStats.allBNBWithdrawn += bnbAmount;
-        
-        // 更新时间
-        bnbTime[user] = block.timestamp;
-
-    }
 
     //更新Vollar兑换USDT数据
     function completeVollarForUSDTUpdate(address user, uint256 amount, uint256 usdtAmount) internal {
@@ -242,7 +220,7 @@ contract UserDataManager {
 
         // 更新用户数据
         u.exchangedBurnedVollar += uint128(amount);
-        u.exchangedUSDT += usdtAmount;
+        u.exchangedUSDT += uint128(usdtAmount);
 
         // 更新系统数据
         globalStats.allTotalAmountS += amount;
