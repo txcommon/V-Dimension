@@ -12,46 +12,23 @@ library TokenExchange {
 
         uint256 billions = totalSupply / MathUtils.baseBillion;
 
-        if (billions < 1000) {
+        if (billions < 5000) {
             return 0.001 ether;
-
-        } else if (billions < 5000) {
-
-            uint256 decreaseAmount = ((billions - 1000) / 50) * 0.00001 ether;
-            uint256 newFee = 0.001 ether - decreaseAmount;
-
-            return newFee >= 0.0001 ether ? newFee : 0.0001 ether;
-
         } else {
-
-            return 0.0001 ether;
-
+            return 0.0005 ether;
         }
     }
 
     //VID兑换单价计算
     function getMintRate(uint256 totalSupply) internal pure returns (uint256) {
-        
+
         if (totalSupply < MathUtils.BASE_SUPPLY) {
             return 1;
         }
 
         uint256 rate = (totalSupply - MathUtils.BASE_SUPPLY) / (3 * MathUtils.baseMillion) + 2;
-        
+
         return rate;
-    }
-
-    //普通转账税率计算
-    function getTokenTax(uint256 totalSupply) internal pure returns (uint256) {
-
-        if (totalSupply < 1000 * MathUtils.baseBillion) {
-            return 0;
-        }
-
-        uint256 taxRate = (totalSupply - 1000 * MathUtils.baseBillion) / (8 * MathUtils.baseBillion);
-
-        return taxRate > 500 ? 500 : taxRate;
-
     }
 
     //社区额外补贴率计算
@@ -64,11 +41,11 @@ library TokenExchange {
         } else if (millions < 10) {
             return 1000 - (millions * 100);
         } else if (millions < 21) {
-            return 25;
+            return 50;
         } else if (millions < 100) {
-            return 10;
+            return 25;
         } else {
-            return 0;
+            return 10;
         }
     }
 
