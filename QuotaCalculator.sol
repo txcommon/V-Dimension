@@ -9,7 +9,7 @@ library QuotaCalculator {
 
     //VID释放额度计算
     function getVIDQuota(uint256 currentSupply) internal pure returns (uint256) {
-
+        //大于333亿，不再限制释放
         if (currentSupply > 333 * MathUtils.baseBillion) {
             return MathUtils.MAX_SUPPLY;
         }
@@ -20,8 +20,9 @@ library QuotaCalculator {
     function _calculateQuota(uint256 targetSupply) private pure returns (uint256) {
 
         if (targetSupply <= MathUtils.BASE_SUPPLY) {
-            return _calculateEarlyStageQuota(targetSupply);
+            return 3e11;
         }
+        //小于10亿
         if (targetSupply <= MathUtils.MAX_SUPPLY) {
             return _calculateFromBase(targetSupply);
         }
@@ -34,7 +35,7 @@ library QuotaCalculator {
         return MathUtils.MAX_SUPPLY;
     }
 
-    function _calculateEarlyStageQuota(uint256 supply) private pure returns (uint256) {
+    /*function _calculateEarlyStageQuota(uint256 supply) private pure returns (uint256) {
 
         if (supply < 2 * MathUtils.baseMillion) return 5 * MathUtils.base10000;
 
@@ -54,12 +55,12 @@ library QuotaCalculator {
         }
 
         return 385 * MathUtils.base10000;
-    }
+    }*/
 
     function _calculateFromBase(uint256 targetSupply) private pure returns (uint256) {
 
         uint256 currentSupply = MathUtils.BASE_SUPPLY;
-        uint256 currentQuota = 385 * MathUtils.base10000;
+        uint256 currentQuota = 3e11;
         
         while (currentSupply + MathUtils.SUPPLY_STEP <= targetSupply) {
 
@@ -80,7 +81,7 @@ library QuotaCalculator {
     function _calculateFrom10BTo100B(uint256 targetSupply) private pure returns (uint256) {
 
         uint256 currentSupply = MathUtils.MAX_SUPPLY;
-        uint256 currentQuota = 7071222464927;
+        uint256 currentQuota = 3521222464927;
         
         while (currentSupply + (10 * MathUtils.SUPPLY_STEP) <= targetSupply) {
 
@@ -101,7 +102,7 @@ library QuotaCalculator {
     function _calculateFrom100BTo1000B(uint256 targetSupply) private pure returns (uint256) {
 
         uint256 currentSupply = MathUtils.MAX_SUPPLY * 10;
-        uint256 currentQuota = 8819421008328;
+        uint256 currentQuota = 5269421008328;
         
         while (currentSupply + (100 * MathUtils.SUPPLY_STEP) <= targetSupply) {
 
@@ -131,23 +132,23 @@ library QuotaCalculator {
     //USDT释放额度计算
     function getUSDTAllocation(uint256 supply) internal pure returns (uint256) {
 
-        if (supply < MathUtils.baseBillion) return 0;
+        if (supply < 10 * MathUtils.baseBillion) return 0;
 
         if (supply <= 111 * MathUtils.baseBillion) {
-            uint256 steps1 = (supply - MathUtils.baseBillion) / MathUtils.baseBillion;
-            return (steps1 + 1) * 15000000e18;
+            uint256 steps1 = (supply - 10 * MathUtils.baseBillion) / MathUtils.baseBillion;
+            return (steps1 + 1) * 30000000e18;
         }
         
         if (supply <= 222 * MathUtils.baseBillion) {
             uint256 steps2 = (supply - 111 * MathUtils.baseBillion) / MathUtils.baseBillion;
-            uint256 firstSegmentTotal = 111 * 15000000e18;
-            uint256 secondSegmentCurrent = (steps2 + 1) * 20000000e18;
+            uint256 firstSegmentTotal = 111 * 30000000e18;
+            uint256 secondSegmentCurrent = (steps2 + 1) * 40000000e18;
             return firstSegmentTotal + secondSegmentCurrent;
         }
         
         uint256 steps3 = (supply - 222 * MathUtils.baseBillion) / MathUtils.baseBillion;
-        uint256 secondSegmentTotal = 3905000000e18;
-        uint256 thirdSegmentCurrent = steps3 * 30000000e18;
+        uint256 secondSegmentTotal = 781e25;
+        uint256 thirdSegmentCurrent = steps3 * 50000000e18;
         return secondSegmentTotal + thirdSegmentCurrent;
     }
 }
