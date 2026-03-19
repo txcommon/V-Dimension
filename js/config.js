@@ -11,7 +11,7 @@ const CONFIG = {
   
   // 合约地址
   CONTRACTS: {
-    TokenBank: '0xD0B4502e203107B557D1f39257248a680cb47eA0',
+    TokenBank: '0x3308A70Db29bbd8b43Ce789D848c835921bFD408',
     Temple: '0x65BC36e23EF148efeBD6ad65E817e07B5598AB9A',
     VID: '0x407E45963dDa27b1E3c0feB9a60a151D567e7135',
     USDT: '0x55d398326f99059fF775485246999027B3197955',
@@ -1261,6 +1261,31 @@ const TOKENBANK_ABI = [
 			{
 				"indexed": false,
 				"internalType": "uint256",
+				"name": "costAmount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "InterestActivated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
 				"name": "interestAmount",
 				"type": "uint256"
 			},
@@ -1609,13 +1634,6 @@ const TOKENBANK_ABI = [
 	},
 	{
 		"inputs": [],
-		"name": "communityVollarForBNB",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
 		"name": "communityVollarForUSDT",
 		"outputs": [],
 		"stateMutability": "nonpayable",
@@ -1771,11 +1789,6 @@ const TOKENBANK_ABI = [
 					},
 					{
 						"internalType": "uint256",
-						"name": "allBNBWithdrawn",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
 						"name": "allUSDTWithdrawn",
 						"type": "uint256"
 					},
@@ -1843,11 +1856,6 @@ const TOKENBANK_ABI = [
 					{
 						"internalType": "uint256",
 						"name": "mintRate",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "tokenTax",
 						"type": "uint256"
 					},
 					{
@@ -1926,7 +1934,7 @@ const TOKENBANK_ABI = [
 					},
 					{
 						"internalType": "uint128",
-						"name": "exchangedBNB",
+						"name": "exchangedUSDT",
 						"type": "uint128"
 					},
 					{
@@ -1957,11 +1965,6 @@ const TOKENBANK_ABI = [
 					{
 						"internalType": "uint256",
 						"name": "usdtResonanceAmount",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "exchangedUSDT",
 						"type": "uint256"
 					},
 					{
@@ -2065,11 +2068,6 @@ const TOKENBANK_ABI = [
 			},
 			{
 				"internalType": "uint256",
-				"name": "lastBnbTime",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
 				"name": "lastUsdtTime",
 				"type": "uint256"
 			},
@@ -2162,6 +2160,19 @@ const TOKENBANK_ABI = [
 			}
 		],
 		"name": "resonateVID",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "setCommunityContract",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
